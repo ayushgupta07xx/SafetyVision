@@ -1,0 +1,92 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "safetyvision"
+version = "0.1.0"
+description = "Open-source AI-powered PPE compliance monitor"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+license = { text = "MIT" }
+authors = [{ name = "Ayush Gupta" }]
+
+dependencies = [
+    # Core CV
+    "ultralytics>=8.3.0",
+    "opencv-python-headless>=4.10.0",
+    "onnx>=1.16.0",
+    "onnxruntime>=1.19.0",
+    "torch>=2.2.0",
+    "torchvision>=0.17.0",
+    "numpy<2.0",
+    "pillow>=10.0.0",
+
+    # Explainability
+    "grad-cam>=1.5.0",
+    "shap>=0.46.0",
+
+    # RAG (reuse from SentinelOps)
+    "qdrant-client>=1.12.0",
+    "sentence-transformers>=3.0.0",
+    "pdfplumber>=0.11.0",
+
+    # LLM
+    "google-generativeai>=0.8.0",
+    "groq>=0.11.0",
+
+    # Agent (single-node LangGraph)
+    "langgraph>=0.2.0",
+    "langchain-core>=0.3.0",
+
+    # Forecasting
+    "prophet>=1.1.5",
+    "statsmodels>=0.14.0",
+
+    # Serving
+    "gradio>=5.0.0",
+
+    # Analysis / stats
+    "pandas>=2.2.0",
+    "matplotlib>=3.9.0",
+    "plotly>=5.24.0",
+    "scipy>=1.13.0",
+
+    # Tracking
+    "wandb>=0.18.0",
+    "mlflow>=2.17.0",
+
+    # Config
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.6.0",
+    "mypy>=1.11.0",
+    "ipython>=8.27.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["core*", "agent*", "analytics*", "evaluation*", "model*", "serving*", "rag_data*"]
+exclude = ["mlruns*", "tests*", "infra*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+no_implicit_optional = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"

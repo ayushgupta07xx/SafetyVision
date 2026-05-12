@@ -1,0 +1,5 @@
+# SafetyVision deps are declared in pyproject.toml.
+# This file installs the package in editable mode with dev extras.
+# HF Spaces and Lambda use their own slimmer requirements files
+# under serving/hf_app/ and serving/lambda/.
+-e .[dev]
