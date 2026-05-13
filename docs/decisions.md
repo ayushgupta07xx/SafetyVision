@@ -1,0 +1,192 @@
+# Architecture Decisions
+
+This document records key design decisions made during SafetyVision development.
+Each ADR captures context, the decision taken, alternatives considered, and consequences.
+
+---
+
+## ADR-001 — Training infrastructure: Kaggle Notebooks (not GCP)
+
+**Status:** Accepted (Week 1)
+
+**Context**
+
+The original brief specified GCP $300 free-trial credits to spin up a T4 (or L4) Compute Engine VM for YOLOv8n fine-tuning. The training job needed ~15 hours of GPU time.
+
+**Decision**
+
+Pivoted to Kaggle Notebooks: free tier provides 2× Tesla T4 GPUs, 30 hours/week quota, with a 12-hour-per-session cap.
+
+**Why**
+
+GCP T4/L4 instances were **unprovisionable** on a fresh paid account due to an undocumented N1/G2 machine family throttle.
+
+Diagnosed via systematic VM-class testing across 30+ zones globally (us-central, us-east, asia-south, asia-east, europe-west, australia-southeast, southamerica-east). All zones returned the same `ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS` or quota errors specifically for N1 (T4) and G2 (L4) families, even though:
+
+- IAM quota dashboard showed `T4: limit=1.0, usage=0.0` in every region tested
+- `e2-micro` instances provisioned successfully in the same zones (account healthy, billing valid)
+- The issue was machine-family specific, not zone-specific or account-specific
+
+**Alternatives ruled out**
+
+- **GCP support ticket:** Basic Support plan does not include technical case access. Billing-only support could not address machine family availability.
+- **Quota increase request:** Wrong tool — the form is for raising existing quota limits, not for unblocking machine-family throttles on new accounts.
+- **Spot/preemptible T4s:** Same throttle applies.
+- **Other cloud GPUs (AWS, Azure):** Free tiers do not include GPU instances. Would require paid spend.
+
+**Consequences**
+
+Pros:
+- Zero cost
+- 2× T4 in DataParallel mode (more parallel than a single T4 on GCP)
+- No setup overhead — Kaggle environment ships with CUDA, PyTorch, ultralytics pre-installed
+- Public W&B integration straightforward via Kaggle Secrets
+
+Cons:
+- 12-hour-per-session cap forced a mid-run resume at epoch 82/100, requiring an intermediate Kaggle Dataset as a checkpoint carrier (see ADR-003).
+- No ssh access to the training environment — debugging happens via notebook cells, not interactive shell.
+
+---
+
+## ADR-002 — Training dataset: single PPE-Combined corpus (not multi-dataset merge)
+
+**Status:** Accepted (Week 1)
+
+**Context**
+
+The brief proposed merging three smaller Roboflow Universe datasets — CHV Dataset (~7k images), PPE-det, and Construction Site Safety (~3k) — to reach a combined ~10,000+ image training corpus.
+
+**Decision**
+
+Used a single Roboflow dataset, **PPE-Combined v1** (`mazz-maxx/ppe-combined-9bprl-mmcaf`, forked from `s-workspace-cjeuu/ppe-combined-9bprl`), comprising 57,904 images across 13 classes.
+
+**Why**
+
+- PPE-Combined already covers every PPE class the brief targeted (hard hat, vest, gloves, mask, goggles) plus their "NO-" violation counterparts and additional classes (Fall-Detected, No_Harness, Person).
+- 58k images > 10k images — more training signal, particularly for under-represented classes.
+- Single-source labels mean no class-taxonomy normalization or de-duplication code to maintain.
+- Roboflow's merge tool works but introduces a brittle preprocessing step that adds 1–2 days of work for marginal data-quality benefit.
+
+**Consequences**
+
+Pros:
+- Larger and cleaner training corpus
+- Faster path from "have an idea" to "training is running"
+- Reproducible: anyone with a Roboflow API key can pull the exact same dataset
+
+Cons:
+- Less geographic and stylistic diversity than a hand-merged multi-source set would have provided
+- Some classes (`No_Harness`, `NO-Safety Vest`) remain underrepresented and detect poorly — documented as failure modes in the model card.
+- Single-source class taxonomy is fixed; site-specific PPE (arc-flash hoods, cut-resistant sleeves) is out of scope.
+
+---
+
+## ADR-003 — Recovery from Kaggle 12-hour session cap
+
+**Status:** Accepted (Week 1)
+
+**Context**
+
+YOLOv8n training on 58k images at batch=32, imgsz=640 across 100 epochs takes ~15 hours of wall time on 2× T4 — longer than Kaggle's 12-hour Save Version cap. Save Version 1 was killed by Kaggle's timer at epoch 82.5/100.
+
+**Decision**
+
+Resumed training in a second Kaggle Save Version using:
+1. The crashed Save Version 1's output (containing `epoch82.pt`, `last.pt`, and full ultralytics save_dir state) was published as an intermediate Kaggle Dataset (`ayushgupta07xx/safetyvision-v1-checkpoints`).
+2. Save Version 2 attached this dataset as input, copied the save_dir to `/kaggle/working/`, and resumed via `model.train(resume=True)` and `wandb.init(id="9nctv2ai", resume="must", settings=wandb.Settings(init_timeout=300))`.
+3. Save Version 2 completed epochs 83–100 cleanly in ~2.8 hours and exported the final ONNX.
+
+**Why this approach over alternatives**
+
+- **Resuming in the same notebook session is not possible** — Kaggle terminates the session and clears `/kaggle/working/` between Save Versions.
+- **Mounting Save Version 1's raw output directly** is not supported by Kaggle's input mount system. The intermediate Dataset is required.
+- **Re-training from scratch in two chunks** would have wasted ~9 hours of compute and broken the W&B run history continuity.
+
+**Sharp edges discovered**
+
+- Kaggle user-created datasets mount at a non-standard path: `/kaggle/input/datasets/<username>/<slug>/`, not the public-dataset path `/kaggle/input/<slug>/`.
+- `wandb.init(resume="must")` default 90s timeout is too short for resumed runs; `settings=wandb.Settings(init_timeout=300)` was required.
+- Ultralytics requires the save_dir to live on a writable filesystem; `/kaggle/input/` is read-only, so the checkpoint must be `shutil.copytree`'d to `/kaggle/working/` before `resume=True`.
+
+**Consequences**
+
+Pros:
+- 100 full epochs trained without re-doing work
+- W&B run ID preserved (single canonical training run for the project)
+
+Cons (see ADR-004):
+- Ultralytics' built-in W&B callback did not re-bind to the manually-resumed W&B run, leaving a chart gap for epochs 83–100 on the W&B UI.
+
+---
+
+## ADR-004 — Accept W&B chart gap on resumed training; lean on `results.csv` as canonical metrics
+
+**Status:** Accepted (Week 1)
+
+**Context**
+
+After completing epochs 83–100 in Save Version 2, the W&B run shows:
+- Run status: Finished (correct)
+- Total runtime updated to include resumed time (correct)
+- **Training metrics for epochs 83–100: not logged**
+
+Root cause: ultralytics 8.3.40 ships a W&B callback that calls `wandb.init()` itself on training start. When training is resumed via `model.train(resume=True)` and W&B is already initialized externally with `resume="must"`, ultralytics' internal callback fails silently and does not re-bind metric logging to the active run.
+
+**Decision**
+
+Accept the W&B chart gap. Treat the local `model/yolov8n-ppe-v1/results.csv` (full 100-epoch metric history written directly by ultralytics) as the canonical metrics source. Document the gap in the model card and link to results.csv for completeness.
+
+**Why not fix it**
+
+- Patching ultralytics' callback would require either pinning to an older version (regression risk on other features) or maintaining a fork (long-tail maintenance cost).
+- The W&B run remains usable for epochs 1–82, which contains the main learning curves and the model's plateau point.
+- `results.csv` is more portable than W&B anyway — it gets committed to the repo, survives W&B account changes, and renders directly with `pandas.read_csv()`.
+
+**Consequences**
+
+Pros:
+- Zero engineering cost
+- Canonical metrics live with the code, not on a third-party service
+
+Cons:
+- W&B URL alone does not tell the full training story; readers must also consult `results.csv` for the last 18 epochs
+- If we ever need to resume training again, this sharp edge will recur
+
+---
+
+## ADR-005 — Experiment tracking: stack W&B + MLflow
+
+**Status:** Accepted (Week 1)
+
+**Context**
+
+The brief specifies both Weights & Biases (for public training-run visibility) and MLflow (as the local model registry and run archive). Both tools log overlapping metrics and parameters.
+
+**Decision**
+
+Run both in parallel. W&B is enabled via ultralytics' built-in callback (`wandb=True` in training args). MLflow runs alongside via explicit `mlflow.start_run()` + `mlflow.log_metrics()` + `mlflow.pytorch.log_model()`. The MLflow file store (`mlruns/`) is committed to the repo; the W&B run is public.
+
+**Why**
+
+- W&B provides a clean public URL for showing training history to anyone — useful for collaborators, recruiters, and the resume.
+- MLflow's local file store lives in the repo and survives third-party service outages or account changes. It also natively integrates with model-registry concepts (stages: `Production`, `Staging`).
+- The two tools serve different audiences (public vs in-repo) and different time horizons (sharable now vs reproducible later).
+- Cost: zero. Both are free for this scale of use.
+
+**Consequences**
+
+Pros:
+- Resilience: if either service breaks or an account is lost, the other still has the run
+- Two distinct ATS keywords (W&B and MLflow) anchored in real code, not boilerplate
+- MLflow `mlruns/` works offline and after `git clone`
+
+Cons:
+- Two systems to keep in sync at every `log_metrics()` site (mitigated by wrapping in a single training script)
+- MLflow's local file store is committed to git, which means it grows with every training run (~16 MB for this run — acceptable; future runs may need to be cleaned out before commit)
+
+---
+
+*Future ADRs (placeholders):*
+- ADR-006 — Lambda Function URLs over AWS API Gateway (Week 3)
+- ADR-007 — Gradio vs FastAPI for HF Spaces (Week 3)
+- ADR-008 — Prophet vs SARIMA baseline for compliance forecasting (Week 2)
