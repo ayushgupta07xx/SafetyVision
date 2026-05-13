@@ -1,0 +1,101 @@
+==================================================
+VAL SPLIT
+==================================================
+Ultralytics 8.3.40 🚀 Python-3.12.12 torch-2.10.0+cu128 CUDA:0 (Tesla T4, 14913MiB)
+Model summary (fused): 168 layers, 3,008,183 parameters, 0 gradients, 8.1 GFLOPs
+val: Scanning /kaggle/working/PPE-Combined-1/valid/labels.cache... 10834 images, 920 backgrounds, 0 corrupt: 100%|██████████| 10834/10834 [00:00<?, ?it/s]
+WARNING ⚠️ Box and segment counts should be equal, but got len(segments) = 26, len(boxes) = 25308. To resolve this only boxes will be used and all segments will be removed. To avoid this please supply either a detect or segment dataset, not a detect-segment mixed dataset.
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 678/678 [01:26<00:00,  7.85it/s]
+                   all      10834      25308      0.629      0.716      0.693      0.431
+         Fall-Detected        899        899       0.75      0.851      0.865      0.578
+                Gloves        846       1684      0.782      0.686      0.783      0.389
+               Goggles        859        964      0.785      0.864      0.892      0.524
+               Hardhat       4070      10259        0.8        0.9       0.89      0.522
+                  Mask        317        594      0.484      0.875      0.532      0.379
+             NO-Gloves        808       1813      0.703      0.683      0.721      0.344
+            NO-Goggles        999       1372      0.771      0.629      0.729      0.396
+            NO-Hardhat       1147       2707      0.596      0.793      0.706      0.461
+               NO-Mask        327        505      0.573      0.788      0.611      0.446
+        NO-Safety Vest        409        698      0.398      0.494      0.359      0.208
+            No_Harness        232        276      0.176     0.0726       0.26      0.144
+                Person        650       1079      0.656      0.881      0.846      0.597
+           Safety Vest       1444       2458      0.707      0.791      0.817      0.612
+Speed: 0.2ms preprocess, 2.9ms inference, 0.0ms loss, 1.0ms postprocess per image
+Results saved to runs/detect/val
+mAP50: 0.6932
+mAP50-95: 0.4308
+
+==================================================
+TEST SPLIT (held out)
+==================================================
+Ultralytics 8.3.40 🚀 Python-3.12.12 torch-2.10.0+cu128 CUDA:0 (Tesla T4, 14913MiB)
+val: Scanning /kaggle/working/PPE-Combined-1/test/labels... 5148 images, 427 backgrounds, 0 corrupt: 100%|██████████| 5148/5148 [00:04<00:00, 1172.48it/s]
+val: New cache created: /kaggle/working/PPE-Combined-1/test/labels.cache
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100%|██████████| 322/322 [00:40<00:00,  7.88it/s]
+                   all       5148      11303      0.607      0.711      0.701      0.441
+         Fall-Detected        450        450      0.775      0.793      0.838      0.555
+                Gloves        276        569      0.765      0.715      0.802      0.416
+               Goggles        426        470      0.798       0.86      0.908      0.528
+               Hardhat       2050       5100      0.813      0.883      0.891      0.518
+                  Mask        176        434      0.568      0.733      0.651      0.394
+             NO-Gloves        306        676       0.74      0.754      0.802        0.4
+            NO-Goggles        428        558       0.78      0.701      0.799      0.458
+            NO-Hardhat        471       1122      0.621      0.821      0.775      0.521
+               NO-Mask        158        218      0.502      0.763      0.573      0.378
+        NO-Safety Vest        175        342      0.469      0.491      0.395      0.217
+            No_Harness          1          1          0          0          0          0
+                Person         95        138      0.367      0.942      0.864      0.739
+           Safety Vest        713       1225      0.692      0.789      0.815      0.615
+Speed: 0.2ms preprocess, 2.8ms inference, 0.0ms loss, 1.0ms postprocess per image
+Results saved to runs/detect/val2
+Test mAP50: 0.7011
+Test mAP50-95: 0.4414
+
+==================================================
+ONNX EXPORT
+==================================================
+Ultralytics 8.3.40 🚀 Python-3.12.12 torch-2.10.0+cu128 CPU (Intel Xeon 2.00GHz)
+
+PyTorch: starting from '/kaggle/working/safetyvision/yolov8n-ppe-v1/weights/best.pt' with input shape (1, 3, 640, 640) BCHW and output shape(s) (1, 17, 8400) (5.9 MB)
+requirements: Ultralytics requirements ['onnxslim', 'onnxruntime-gpu'] not found, attempting AutoUpdate...
+Collecting onnxslim
+  Downloading onnxslim-0.1.93-py3-none-any.whl.metadata (10 kB)
+Collecting onnxruntime-gpu
+  Downloading onnxruntime_gpu-1.26.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.meta
+data (5.6 kB)
+Requirement already satisfied: colorama in /usr/local/lib/python3.12/dist-packages (from onnxslim) (0.4.6)
+Requirement already satisfied: ml-dtypes in /usr/local/lib/python3.12/dist-packages (from onnxslim) (0.5.4)
+Requirement already satisfied: onnx in /usr/local/lib/python3.12/dist-packages (from onnxslim) (1.20.1)
+Requirement already satisfied: packaging in /usr/local/lib/python3.12/dist-packages (from onnxslim) (26.0)
+Requirement already satisfied: sympy>=1.13.1 in /usr/local/lib/python3.12/dist-packages (from onnxslim) (1.14.0)
+Requirement already satisfied: flatbuffers in /usr/local/lib/python3.12/dist-packages (from onnxruntime-gpu) (25.12.19)
+Requirement already satisfied: numpy>=1.21.6 in /usr/local/lib/python3.12/dist-packages (from onnxruntime-gpu) (2.0.2)
+Requirement already satisfied: protobuf in /usr/local/lib/python3.12/dist-packages (from onnxruntime-gpu) (5.29.5)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /usr/local/lib/python3.12/dist-packages (from sympy>=1.13.1->onnxslim) (1.3.0)
+Requirement already satisfied: typing_extensions>=4.7.1 in /usr/local/lib/python3.12/dist-packages (from onnx->onnxslim) (4.15.0)
+Downloading onnxslim-0.1.93-py3-none-any.whl (238 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 238.4/238.4 kB 9.0 MB/s eta 0:00:00
+Downloading onnxruntime_gpu-1.26.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (277.0 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 277.0/277.0 MB 205.6 MB/s eta 0:00:00
+Installing collected packages: onnxruntime-gpu, onnxslim
+Successfully installed onnxruntime-gpu-1.26.0 onnxslim-0.1.93
+
+requirements: AutoUpdate success ✅ 13.8s, installed 2 packages: ['onnxslim', 'onnxruntime-gpu']
+requirements: ⚠️ Restart runtime or rerun command for updates to take effect
+
+
+ONNX: starting export with onnx 1.20.1 opset 18...
+W0513 18:14:13.430000 23 torch/onnx/_internal/exporter/_schemas.py:455] Missing annotation for parameter 'input' from (input, rois, spatial_scale: 'float', pooled_height: 'int', pooled_width: 'int', sampling_ratio: 'int' = -1, aligned: 'bool' = False). Treating as an Input.
+W0513 18:14:13.432000 23 torch/onnx/_internal/exporter/_schemas.py:455] Missing annotation for parameter 'rois' from (input, rois, spatial_scale: 'float', pooled_height: 'int', pooled_width: 'int', sampling_ratio: 'int' = -1, aligned: 'bool' = False). Treating as an Input.
+W0513 18:14:13.434000 23 torch/onnx/_internal/exporter/_schemas.py:455] Missing annotation for parameter 'input' from (input, boxes, output_size: 'Sequence[int]', spatial_scale: 'float' = 1.0). Treating as an Input.
+W0513 18:14:13.436000 23 torch/onnx/_internal/exporter/_schemas.py:455] Missing annotation for parameter 'boxes' from (input, boxes, output_size: 'Sequence[int]', spatial_scale: 'float' = 1.0). Treating as an Input.
+ONNX: slimming with onnxslim 0.1.93...
+ONNX: export success ✅ 19.5s, saved as '/kaggle/working/safetyvision/yolov8n-ppe-v1/weights/best.onnx' (11.6 MB)
+
+Export complete (21.1s)
+Results saved to /kaggle/working/safetyvision/yolov8n-ppe-v1/weights
+Predict:         yolo predict task=detect model=/kaggle/working/safetyvision/yolov8n-ppe-v1/weights/best.onnx imgsz=640  
+Validate:        yolo val task=detect model=/kaggle/working/safetyvision/yolov8n-ppe-v1/weights/best.onnx imgsz=640 data=/kaggle/working/PPE-Combined-1/data.yaml  
+Visualize:       https://netron.app
+✅ ONNX: /kaggle/working/safetyvision/yolov8n-ppe-v1/weights/best.onnx
+✅ ONNX loadable. Output spec: [[1, 17, 8400]]
