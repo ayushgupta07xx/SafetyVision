@@ -1,0 +1,43 @@
+OSHA 1926.101 — Hearing Protection
+Source: https://www.osha.gov/laws-regs/regulations/standardnumber/1926/1926.101
+
+Part Number:
+1926
+
+Part Number Title:
+Safety and Health Regulations for Construction
+
+Subpart:
+1926 Subpart E
+
+Subpart Title:
+Personal Protective and Life Saving Equipment
+
+Standard Number:
+
+ 1926.101
+ 
+
+Title:
+
+Hearing protection.
+
+GPO Source:
+
+e-CFR
+
+ 1926.101(a)
+ 
+
+Wherever it is not feasible to reduce the noise levels or duration of exposures to those specified in Table D-2, Permissible Noise Exposures, in § 1926.52, ear protective devices shall be provided and used.
+
+ 1926.101(b)
+ 
+
+ Ear protective devices inserted in the ear shall be fitted or determined individually by competent persons.
+ 
+
+ 1926.101(c)
+ 
+
+ Plain cotton is not an acceptable protective device.

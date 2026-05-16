@@ -58,3 +58,12 @@ infra/aws/*.tfstate
 infra/aws/*.tfstate.backup
 infra/aws/.terraform.lock.hcl
 infra/aws/terraform.tfvars
+
+# Local debug artifacts (explainer / detector smoke tests)
+/_debug_*.jpg
+/_debug_*.png
+/test.jpg
+/test.png
+/annotations.png
+/gradcam.png
+/shap.png

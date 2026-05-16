@@ -1,0 +1,67 @@
+OSHA 1926.105 — Safety Nets
+Source: https://www.osha.gov/laws-regs/regulations/standardnumber/1926/1926.105
+
+Part Number:
+1926
+
+Part Number Title:
+Safety and Health Regulations for Construction
+
+Subpart:
+1926 Subpart E
+
+Subpart Title:
+Personal Protective and Life Saving Equipment
+
+Standard Number:
+
+ 1926.105
+ 
+
+Title:
+
+Safety nets.
+
+GPO Source:
+
+e-CFR
+
+ 1926.105(a)
+ 
+
+Safety nets shall be provided when workplaces are more than 25 feet above the ground or water surface, or other surfaces where the use of ladders, scaffolds, catch platforms, temporary floors, safety lines, or safety belts is impractical.
+
+ 1926.105(b)
+ 
+
+Where safety net protection is required by this part, operations shall not be undertaken until the net is in place and has been tested.
+
+ 1926.105(c)
+ 
+
+ 1926.105(c)(1)
+ 
+
+Nets shall extend 8 feet beyond the edge of the work surface where employees are exposed and shall be installed as close under the work surface as practical but in no case more than 25 feet below such work surface. Nets shall be hung with sufficient clearance to prevent user's contact with the surfaces or structures below. Such clearances shall be determined by impact load testing.
+
+ 1926.105(c)(2)
+ 
+
+It is intended that only one level of nets be required for bridge construction.
+
+ 1926.105(d)
+ 
+
+The mesh size of nets shall not exceed 6 inches by 6 inches. All new nets shall meet accepted performance standards of 17,500 foot-pounds minimum impact resistance as determined and certified by the manufacturers, and shall bear a label of proof test. Edge ropes shall provide a minimum breaking strength of 5,000 pounds.
+
+ 1926.105(e)
+ 
+
+Forged steel safety hooks or shackles shall be used to fasten the net to its supports.
+
+ 1926.105(f)
+ 
+
+Connections between net panels shall develop the full strength of the net.
+
+[59 FR 40729, Aug. 9, 1994; 60 FR 5131, Jan. 26, 1995; 60 FR 39243, Aug. 2, 1995]
