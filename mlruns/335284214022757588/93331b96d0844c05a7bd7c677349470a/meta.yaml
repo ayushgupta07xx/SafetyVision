@@ -1,0 +1,14 @@
+artifact_uri: file:///home/ayushgupta15062003/safetyvision/mlruns/335284214022757588/93331b96d0844c05a7bd7c677349470a/artifacts
+end_time: 1778951197325
+entry_point_name: ''
+experiment_id: '335284214022757588'
+lifecycle_stage: active
+run_id: 93331b96d0844c05a7bd7c677349470a
+run_name: compare_No_Harness
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778951197207
+status: 3
+tags: []
+user_id: ayushgupta15062003

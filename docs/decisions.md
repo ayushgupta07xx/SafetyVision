@@ -184,9 +184,91 @@ Cons:
 - Two systems to keep in sync at every `log_metrics()` site (mitigated by wrapping in a single training script)
 - MLflow's local file store is committed to git, which means it grows with every training run (~16 MB for this run — acceptable; future runs may need to be cleaned out before commit)
 
+## ADR-008 — Prophet as primary 7-day compliance forecaster; SARIMA as documented baseline
+
+**Status:** Accepted
+**Date:** 2026-05-16
+**Decision owner:** Ayush
+**Supersedes:** —
+
+### Context
+The brief calls for a 7-day compliance forecast per violation type (Layer 5) with
+both a primary model and a baseline for the model card. Two candidates were on
+the table:
+
+- **Prophet** — additive decomposition (trend + weekly seasonality + noise),
+  Bayesian fit via Stan, native handling of missing days, automatic uncertainty
+  intervals.
+- **SARIMA** — classical ARIMA with explicit seasonal differencing, no
+  Bayesian machinery, requires manual order/seasonal_order specification.
+
+Both were implemented (`analytics/forecast.py` and `analytics/forecast_baseline.py`)
+against the same `load_compliance_series()` contract. The decision was deferred
+until a real backtest could be run on representative data.
+
+### Evidence
+30 days of synthetic violation history (deterministic, `seed=42`) seeded via
+`analytics/seed_violations.py` with realistic weekly seasonality, slow trend,
+and ±15–30% noise. Backtest split: 23 train / 7 test. Compared across three
+violation types with different base rates.
+
+| Violation type     | Base rate | Prophet MAPE | SARIMA MAPE | Winner   |
+|--------------------|-----------|--------------|-------------|----------|
+| NO-Hardhat         | 10%       | 0.0183       | 0.0320      | Prophet  |
+| NO-Safety Vest     | 8%        | 0.0136       | 0.0225      | Prophet  |
+| No_Harness         | 3%        | 0.0107       | 0.0043      | SARIMA   |
+| **Average**        | —         | **0.0142**   | 0.0196      | Prophet  |
+
+SARIMA configuration: order=(1,1,1), seasonal_order=(1,1,1,7).
+Reproduce: `python -m analytics.compare_forecasts`.
+MLflow runs: experiment `safetyvision-forecasting`, 3 runs logged.
+
+### Decision
+**Prophet** is the primary forecaster surfaced in the Gradio app and the
+DynamoDB-backed `/forecast` endpoint (Week 3).
+**SARIMA** remains in `analytics/forecast_baseline.py` and the model card as a
+documented comparison baseline.
+
+### Reasoning
+1. **Better average MAPE** on the backtest (2/3 types, lower overall mean).
+2. **Native missing-day handling.** DynamoDB violation history will have days
+   with zero events; Prophet ingests these without imputation. SARIMA requires
+   continuous indexing.
+3. **No hyperparameter grid.** SARIMA needs `(p,d,q,P,D,Q,s)` tuning per series;
+   Prophet's `weekly_seasonality=True` is the only knob touched.
+4. **Built-in uncertainty intervals** at a configurable width
+   (`interval_width=0.80` here) for the Gradio CI bands.
+
+### Caveat (honest)
+SARIMA wins on **No_Harness** — the lowest-incidence series. This is consistent
+with the textbook pattern: simpler models generalize better when signal is
+sparse and noise dominates. If a future violation class has a base rate below
+~5%, switching to SARIMA for that class is the right move. The model card
+documents this so the comparison stays honest and not cherry-picked.
+
+A 30-day synthetic backtest is the floor of trustworthy evaluation, not the
+ceiling. Real DynamoDB data is collected starting Week 3 — re-run this backtest
+on real data once 30+ days have accumulated, and revisit if average MAPE
+crosses over.
+
+### Alternatives considered
+- **Exponential smoothing (Holt-Winters)** — simpler than SARIMA, but no
+  uncertainty intervals out of the box, and weaker on trend-change adaptation.
+- **LSTM** — overkill for ≤60-day daily series, slow to train, and we have no
+  GPU at runtime.
+- **Prophet only, drop SARIMA** — losing the baseline removes the
+  "Prophet vs SARIMA" talking point on the resume and the comparison MAPE
+  table in the model card. Keeping both costs ~140 LOC.
+
+### Files touched
+- `analytics/forecast.py` (Prophet, primary)
+- `analytics/forecast_baseline.py` (SARIMA, baseline)
+- `analytics/compare_forecasts.py` (backtest harness, MLflow logging)
+- `analytics/seed_violations.py` (synthetic data for the backtest)
+- `evaluation/forecast_compare/summary.json` (committed comparison output)
+
 ---
 
 *Future ADRs (placeholders):*
 - ADR-006 — Lambda Function URLs over AWS API Gateway (Week 3)
 - ADR-007 — Gradio vs FastAPI for HF Spaces (Week 3)
-- ADR-008 — Prophet vs SARIMA baseline for compliance forecasting (Week 2)

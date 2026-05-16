@@ -1,0 +1,27 @@
+{
+  "per_type": [
+    {
+      "type": "NO-Hardhat",
+      "prophet_mape": 0.018324379404540753,
+      "sarima_mape": 0.032006267902997536,
+      "winner": "prophet"
+    },
+    {
+      "type": "NO-Safety Vest",
+      "prophet_mape": 0.013576344346695995,
+      "sarima_mape": 0.022514742854021635,
+      "winner": "prophet"
+    },
+    {
+      "type": "No_Harness",
+      "prophet_mape": 0.0106577506075264,
+      "sarima_mape": 0.004311644783936415,
+      "winner": "sarima"
+    }
+  ],
+  "overall": {
+    "prophet_mape_avg": 0.014186158119587714,
+    "sarima_mape_avg": 0.01961088518031853,
+    "overall_winner": "prophet"
+  }
+}

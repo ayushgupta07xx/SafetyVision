@@ -1,0 +1,14 @@
+artifact_uri: file:///home/ayushgupta15062003/safetyvision/mlruns/335284214022757588/8a07403ebb1240a78a171d92df79bc5c/artifacts
+end_time: 1778951197013
+entry_point_name: ''
+experiment_id: '335284214022757588'
+lifecycle_stage: active
+run_id: 8a07403ebb1240a78a171d92df79bc5c
+run_name: compare_NO-Hardhat
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778951196790
+status: 3
+tags: []
+user_id: ayushgupta15062003
