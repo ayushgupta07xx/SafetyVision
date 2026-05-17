@@ -88,13 +88,25 @@ python_version = "3.11"
 ignore_missing_imports = true
 no_implicit_optional = true
 
+[[tool.mypy.overrides]]
+# Chat-6 one-off analysis script — excluded from mypy for the same reason
+# it's omitted from coverage source: not part of the production code path.
+module = "analytics.compare_forecasts"
+ignore_errors = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+markers = [
+    "slow: requires real model download from HF Hub (run with `pytest -m slow`)",
+]
 
 [tool.coverage.run]
 source = ["core", "agent", "analytics", "evaluation"]
 omit = [
+    # One-off chat-6 analysis script — orchestrates Prophet+SARIMA functions
+    # that ARE unit-tested. Output JSON is committed in evaluation/forecast_compare/.
+    "analytics/compare_forecasts.py",
     "evaluation/golden_set/*",
     "rag_data/*",
     "model/*",

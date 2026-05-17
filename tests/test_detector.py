@@ -245,6 +245,147 @@ class TestPostprocess:
         assert result[0].confidence == pytest.approx(0.90, abs=0.05)
 
 
+# ─── PPEDetector.predict() — full pipeline with mocked ONNX session ─────────
+class TestPredict:
+    """End-to-end predict() with a fake onnxruntime session.
+
+    Validates the orchestration: image input → preprocess → session.run →
+    postprocess → _detect_violations → DetectionResult. Also covers input
+    validation (path vs ndarray, shape checks, error paths).
+    """
+
+    @staticmethod
+    def _attach_fake_session(detector, output_array):
+        """Attach a MagicMock session that returns the given ONNX output."""
+        from unittest.mock import MagicMock
+        fake_session = MagicMock()
+        fake_session.run.return_value = [output_array]
+        detector.session = fake_session
+        detector.input_name = "images"
+
+    @staticmethod
+    def _yolo_output(anchors: list[tuple]) -> np.ndarray:
+        """Build a (1, 4+num_classes, N) ONNX-shaped output.
+        Each anchor: (cx, cy, w, h, class_id, confidence) in letterbox coords."""
+        n = max(len(anchors), 1)
+        # detector_instance fixture has 7 classes (0..6) → 4+7=11
+        out = np.zeros((1, 11, n), dtype=np.float32)
+        for i, (cx, cy, w, h, cid, conf) in enumerate(anchors):
+            out[0, 0, i] = cx
+            out[0, 1, i] = cy
+            out[0, 2, i] = w
+            out[0, 3, i] = h
+            out[0, 4 + cid, i] = conf
+        return out
+
+    def test_predict_from_ndarray_returns_detection_result(
+        self, detector_instance, sample_bgr,
+    ):
+        out = self._yolo_output([(320, 320, 100, 100, 0, 0.9)])  # Person
+        self._attach_fake_session(detector_instance, out)
+
+        result = detector_instance.predict(sample_bgr)
+        assert isinstance(result, DetectionResult)
+        assert len(result.detections) == 1
+        assert result.detections[0].cls == "Person"
+        assert result.image_shape == (100, 200)
+        assert result.inference_ms >= 0.0
+
+    def test_predict_from_path(self, detector_instance, sample_bgr, tmp_path):
+        import cv2
+        img_path = tmp_path / "test.jpg"
+        cv2.imwrite(str(img_path), sample_bgr)
+
+        out = self._yolo_output([(320, 320, 100, 100, 0, 0.9)])
+        self._attach_fake_session(detector_instance, out)
+
+        # Both str and Path inputs should work
+        result_str = detector_instance.predict(str(img_path))
+        result_path = detector_instance.predict(img_path)
+        assert len(result_str.detections) == 1
+        assert len(result_path.detections) == 1
+
+    def test_predict_empty_output_yields_empty_result(
+        self, detector_instance, sample_bgr,
+    ):
+        # All zeros → every anchor below conf threshold → no detections
+        out = np.zeros((1, 11, 1), dtype=np.float32)
+        self._attach_fake_session(detector_instance, out)
+        result = detector_instance.predict(sample_bgr)
+        assert result.detections == []
+        assert result.violations == []
+
+    def test_predict_raises_on_unreadable_image_path(self, detector_instance):
+        with pytest.raises(ValueError, match="Could not read"):
+            detector_instance.predict("/nonexistent/image_path_that_does_not_exist.jpg")
+
+    def test_predict_raises_on_grayscale_input(self, detector_instance):
+        grayscale = np.zeros((100, 100), dtype=np.uint8)  # 2D, not (H, W, 3)
+        with pytest.raises(ValueError, match="Expected BGR"):
+            detector_instance.predict(grayscale)
+
+    def test_predict_raises_on_rgba_input(self, detector_instance):
+        rgba = np.zeros((100, 100, 4), dtype=np.uint8)  # 4 channels
+        with pytest.raises(ValueError, match="Expected BGR"):
+            detector_instance.predict(rgba)
+
+    def test_predict_wires_violation_pairing(self, detector_instance, sample_bgr):
+        # Person + NO-Hardhat at same location → predict() must surface a violation
+        out = self._yolo_output([
+            (320, 320, 200, 400, 0, 0.9),    # Person (class_id=0)
+            (320, 200, 100, 50, 2, 0.85),    # NO-Hardhat (class_id=2)
+        ])
+        self._attach_fake_session(detector_instance, out)
+
+        result = detector_instance.predict(sample_bgr)
+        assert len(result.detections) == 2
+        assert len(result.violations) == 1
+        assert result.violations[0].type == "NO-Hardhat"
+        assert result.violations[0].risk_level == "HIGH"
+
+    def test_predict_passes_correct_input_to_session(
+        self, detector_instance, sample_bgr,
+    ):
+        out = self._yolo_output([(320, 320, 100, 100, 0, 0.9)])
+        self._attach_fake_session(detector_instance, out)
+        detector_instance.predict(sample_bgr)
+
+        # session.run is called as: run(None, {input_name: tensor})
+        call_args = detector_instance.session.run.call_args
+        assert call_args.args[0] is None       # outputs = all
+        feed = call_args.args[1]
+        assert "images" in feed
+        tensor = feed["images"]
+        assert tensor.shape == (1, 3, 640, 640)
+        assert tensor.dtype == np.float32
+
+
+# ─── PPEDetector.get() — singleton accessor ─────────────────────────────────
+class TestGetSingleton:
+    """Singleton pattern for Lambda warm-container reuse. We monkeypatch
+    __init__ to a no-op so we never touch HF Hub or load a real ONNX model."""
+
+    def test_get_returns_same_instance_on_repeated_call(self, monkeypatch):
+        PPEDetector._instance = None
+        monkeypatch.setattr(PPEDetector, "__init__", lambda self: None)
+        try:
+            d1 = PPEDetector.get()
+            d2 = PPEDetector.get()
+            assert d1 is d2
+        finally:
+            PPEDetector._instance = None  # don't poison other tests
+
+    def test_get_initializes_lazily(self, monkeypatch):
+        PPEDetector._instance = None
+        monkeypatch.setattr(PPEDetector, "__init__", lambda self: None)
+        try:
+            assert PPEDetector._instance is None
+            PPEDetector.get()
+            assert PPEDetector._instance is not None
+        finally:
+            PPEDetector._instance = None
+
+
 # ─── core.rag.format_chunks_for_prompt ──────────────────────────────────────
 class TestFormatChunksForPrompt:
     def test_empty_chunks(self):

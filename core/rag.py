@@ -87,15 +87,18 @@ class OSHARetriever:
             limit=top_k,
             with_payload=True,
         ).points
-        return [
-            RetrievedChunk(
+        results: list[RetrievedChunk] = []
+        for h in hits:
+            # with_payload=True guarantees payload is present at runtime;
+            # Qdrant's type stub still declares it Optional.
+            assert h.payload is not None
+            results.append(RetrievedChunk(
                 text=h.payload["text"],
                 source=h.payload["source"],
                 chunk_idx=h.payload["chunk_idx"],
                 score=h.score,
-            )
-            for h in hits
-        ]
+            ))
+        return results
 
     def retrieve_for_violation(
         self, violation_type: str, top_k: int = 3

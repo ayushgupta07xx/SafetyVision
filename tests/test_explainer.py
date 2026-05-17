@@ -147,6 +147,13 @@ class TestPngB64:
         decoded = cv2.imdecode(arr, cv2.IMREAD_COLOR)
         assert decoded.shape == img.shape
 
+    def test_raises_on_imencode_failure(self, monkeypatch):
+        import cv2
+        monkeypatch.setattr(cv2, "imencode", lambda *a, **kw: (False, None))
+        img = np.zeros((10, 10, 3), dtype=np.uint8)
+        with pytest.raises(RuntimeError, match="Failed to encode PNG"):
+            _png_b64(img)
+
 
 # ─── _fig_to_b64 ────────────────────────────────────────────────────────────
 class TestFigToB64:

@@ -74,12 +74,12 @@ class _TorchModelCache:  # pragma: no cover
         pt_path = hf_hub_download(repo_id=HF_REPO, filename=PT_FILENAME)
         logger.info("Loading PyTorch model from %s", pt_path)
         yolo = YOLO(pt_path)
-        model = yolo.model
-        model.eval()
-        for p in model.parameters():
+        model = yolo.model  # type: ignore[assignment]
+        model.eval()  # type: ignore[union-attr]
+        for p in model.parameters():  # type: ignore[union-attr]
             p.requires_grad_(False)
-        cls._model = model
-        names = model.names if hasattr(model, "names") else yolo.names
+        cls._model = model  # type: ignore[assignment]
+        names = model.names if hasattr(model, "names") else yolo.names  # type: ignore[union-attr]
         cls._name_to_id = {v: k for k, v in dict(names).items()}
         logger.info("PyTorch model loaded with %d classes", len(cls._name_to_id))
 
@@ -195,7 +195,7 @@ def _heatmap_overlay(
     show_cam_on_image's flat 50/50 blend (which paints uniform-heat regions as
     solid colored rectangles when bbox-masked).
     """
-    colored_bgr = cv2.applyColorMap(np.uint8(255 * heatmap), cv2.COLORMAP_JET)
+    colored_bgr = cv2.applyColorMap((255 * heatmap).astype(np.uint8), cv2.COLORMAP_JET)
     colored_rgb = cv2.cvtColor(colored_bgr, cv2.COLOR_BGR2RGB).astype(np.float32)
     alpha = (heatmap * alpha_max)[..., None]
     blended = letterboxed.astype(np.float32) * (1 - alpha) + colored_rgb * alpha
@@ -242,7 +242,7 @@ def gradcam_heatmap_b64(  # pragma: no cover
     # layers emit zero gradients; earlier backbone layers spread heat too
     # thin to be visually useful. SPPF + plain GradCAM is the empirically
     # best configuration for this model.
-    target_layer = model.model[9]
+    target_layer = model.model[9]  # type: ignore[index]
 
     tensor, letterboxed = _preprocess_torch(image_bgr)
     cam = GradCAM(model=model, target_layers=[target_layer])

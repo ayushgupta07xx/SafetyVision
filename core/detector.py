@@ -180,13 +180,13 @@ class PPEDetector:
         )
         if len(idxs) == 0:
             return []
-        idxs = np.array(idxs).flatten()
+        idxs_arr = np.array(idxs).flatten()
 
         # Undo letterbox: subtract pad, divide by scale, clamp to image bounds
         pad_x, pad_y = pad
         orig_h, orig_w = orig_shape
         results: list[Detection] = []
-        for i in idxs:
+        for i in idxs_arr:
             bx1 = max(0.0, (boxes_xyxy[i, 0] - pad_x) / scale)
             by1 = max(0.0, (boxes_xyxy[i, 1] - pad_y) / scale)
             bx2 = min(float(orig_w), (boxes_xyxy[i, 2] - pad_x) / scale)

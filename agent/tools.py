@@ -127,7 +127,7 @@ Generate the incident report JSON now."""
         ),
     )
 
-    response = model.generate_content([user_prompt, pil_image])
+    response = model.generate_content([user_prompt, pil_image])  # type: ignore[arg-type]
     try:
         return json.loads(response.text)
     except (json.JSONDecodeError, ValueError) as e:

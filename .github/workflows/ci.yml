@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint:
-    name: ruff lint
+    name: ruff lint + mypy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,10 +17,14 @@ jobs:
           python-version: '3.11'
           cache: pip
           cache-dependency-path: pyproject.toml
-      - name: Install ruff
-        run: pip install ruff
-      - name: Lint
+      - name: Install lint tools
+        run: pip install ruff mypy
+      - name: Ruff
         run: ruff check .
+      - name: Mypy
+        # mypy uses ignore_missing_imports=true (pyproject) so heavy deps
+        # (torch, ultralytics, prophet, qdrant, etc.) don't need to be installed.
+        run: mypy core/ agent/ analytics/
 
   test:
     name: pytest + coverage (>=60%)
@@ -39,8 +43,10 @@ jobs:
       - name: Install project (editable, dev extras)
         run: pip install -e ".[dev]"
       - name: Run tests with coverage gate
+        # -m "not slow" excludes real-model E2E tests that download
+        # from HF Hub. Those are run locally; see tests/test_smoke_real_model.py.
         run: |
-          pytest tests/ \
+          pytest tests/ -m "not slow" \
             --cov --cov-report=term-missing \
             --cov-fail-under=60
 

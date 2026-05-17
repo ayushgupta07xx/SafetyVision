@@ -114,6 +114,13 @@ class TestSarimaBaseline:
         assert fc_df["yhat_lower"].between(0.0, 1.0).all()
         assert fc_df["yhat_upper"].between(0.0, 1.0).all()
 
+    def test_sarima_raises_on_insufficient_history(self, tmp_db):
+        seed_violations.seed(days=10, rng_seed=42)
+        with pytest.raises(ValueError, match="14"):
+            forecast_baseline.forecast_compliance_sarima(
+                "NO-Hardhat", db_path=tmp_db, history_days=10,
+            )
+
 
 # ─── agent.tools.log_violation → SQLite ─────────────────────────────────────
 class TestLogViolation:
