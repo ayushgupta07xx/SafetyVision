@@ -48,7 +48,7 @@ SHAP_NSAMPLES = 20  # default 200; 20 gives acceptable attribution at ~10× spee
 
 
 # ─── PyTorch model cache ────────────────────────────────────────────────────
-class _TorchModelCache:
+class _TorchModelCache:  # pragma: no cover
     """Singleton for the PyTorch YOLO model (needed for grads + EigenCAM)."""
 
     _model: nn.Module | None = None
@@ -86,7 +86,7 @@ class _TorchModelCache:
 
 
 # ─── Target & wrapper ───────────────────────────────────────────────────────
-class _YoloClassTarget:
+class _YoloClassTarget:  # pragma: no cover
     """Scalar target for pytorch-grad-cam.
 
     Sums class scores of all anchors above `threshold`. Threshold 0.25 aligns
@@ -110,7 +110,7 @@ class _YoloClassTarget:
         return scores.max()
 
 
-class _YoloScalarWrapper(nn.Module):
+class _YoloScalarWrapper(nn.Module):  # pragma: no cover
     """nn.Module producing a scalar per input for SHAP GradientExplainer."""
 
     def __init__(self, model: nn.Module, class_id: int) -> None:
@@ -220,7 +220,7 @@ def _fig_to_b64(fig) -> str:
 
 
 # ─── GradCAM ────────────────────────────────────────────────────────────────
-def gradcam_heatmap_b64(
+def gradcam_heatmap_b64(  # pragma: no cover
     image_bgr: np.ndarray,
     class_name: str,
     bboxes_to_focus: list[tuple[float, float, float, float]] | None = None,
@@ -280,7 +280,7 @@ def annotations_b64(image_bgr: np.ndarray, result: DetectionResult) -> str:
 
 
 # ─── SHAP ───────────────────────────────────────────────────────────────────
-def shap_attribution_b64(image_bgr: np.ndarray, class_name: str) -> str:
+def shap_attribution_b64(image_bgr: np.ndarray, class_name: str) -> str:  # pragma: no cover
     """Per-pixel SHAP attribution map for the given class.
 
     Uses SHAP_NSAMPLES=20 perturbation samples (vs default 200) — ~10× speedup

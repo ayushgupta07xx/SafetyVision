@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: ruff lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install ruff
+        run: pip install ruff
+      - name: Lint
+        run: ruff check .
+
+  test:
+    name: pytest + coverage (>=60%)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install CPU-only torch (avoids pulling CUDA wheels)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+      - name: Install project (editable, dev extras)
+        run: pip install -e ".[dev]"
+      - name: Run tests with coverage gate
+        run: |
+          pytest tests/ \
+            --cov --cov-report=term-missing \
+            --cov-fail-under=60
+
+  link_check:
+    name: HF Hub model repo reachable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: HEAD request to HF Hub model repo
+        run: |
+          status=$(curl -fsSL -o /dev/null -w "%{http_code}" \
+            https://huggingface.co/ayushgupta7777/safetyvision-yolov8)
+          echo "Got HTTP $status"
+          test "$status" = "200"
