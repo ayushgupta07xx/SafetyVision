@@ -13,7 +13,6 @@ import logging
 import os
 import warnings
 from pathlib import Path
-from typing import Tuple
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -36,7 +35,7 @@ def forecast_compliance_sarima(
     horizon_days: int = 7,
     order: tuple = (1, 1, 1),
     seasonal_order: tuple = (1, 1, 1, 7),
-) -> Tuple[pd.DataFrame, go.Figure]:
+) -> tuple[pd.DataFrame, go.Figure]:
     """Fit SARIMA, return (forecast_df[ds, yhat, yhat_lower, yhat_upper], figure)."""
     df = load_compliance_series(violation_type, db_path, history_days)
     if len(df) < 14:

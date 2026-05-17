@@ -9,11 +9,11 @@ import numpy as np
 import pytest
 
 from core.detector import (
+    RISK_LEVELS,
+    VIOLATION_CLASSES,
     Detection,
     DetectionResult,
     PPEDetector,
-    RISK_LEVELS,
-    VIOLATION_CLASSES,
     Violation,
     draw_annotations,
 )

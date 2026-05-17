@@ -51,7 +51,7 @@ class RetrievedChunk:
 class OSHARetriever:
     """Singleton-friendly retriever; embedder and Qdrant client are reused."""
 
-    _instance: "OSHARetriever | None" = None
+    _instance: OSHARetriever | None = None
 
     def __init__(self) -> None:
         qdrant_url = os.getenv("QDRANT_URL")
@@ -71,7 +71,7 @@ class OSHARetriever:
             )
 
     @classmethod
-    def get(cls) -> "OSHARetriever":
+    def get(cls) -> OSHARetriever:
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance

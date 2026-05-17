@@ -10,10 +10,9 @@ from __future__ import annotations
 import pytest
 
 from core.detector import (
-    Detection,
-    PPEDetector,
     RISK_LEVELS,
     VIOLATION_CLASSES,
+    Detection,
     Violation,
 )
 

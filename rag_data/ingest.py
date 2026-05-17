@@ -126,7 +126,7 @@ def main() -> None:
                     "chunk_idx": c["chunk_idx"],
                 },
             )
-            for c, emb in zip(batch, batch_emb)
+            for c, emb in zip(batch, batch_emb, strict=True)
         ]
         client.upsert(collection_name=COLLECTION, points=points)
         logger.info("  upserted %d/%d", min(i + UPSERT_BATCH_SIZE, len(all_chunks)), len(all_chunks))

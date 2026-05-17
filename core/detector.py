@@ -74,7 +74,7 @@ class DetectionResult:
 class PPEDetector:
     """YOLOv8 ONNX detector. First instance downloads weights from HF Hub."""
 
-    _instance: "PPEDetector | None" = None
+    _instance: PPEDetector | None = None
 
     def __init__(
         self,
@@ -111,7 +111,7 @@ class PPEDetector:
         )
 
     @classmethod
-    def get(cls) -> "PPEDetector":
+    def get(cls) -> PPEDetector:
         """Singleton accessor for Lambda warm-container reuse."""
         if cls._instance is None:
             cls._instance = cls()

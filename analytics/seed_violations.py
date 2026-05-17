@@ -20,7 +20,6 @@ import logging
 import os
 import random
 import sqlite3
-import time
 import uuid
 from datetime import datetime, timedelta
 from pathlib import Path

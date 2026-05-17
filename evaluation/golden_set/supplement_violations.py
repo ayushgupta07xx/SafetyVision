@@ -53,13 +53,13 @@ def main() -> None:
     if not SAMPLE_TXT.exists():
         sys.exit(f"{SAMPLE_TXT} missing — run extract_yolo_labels first")
 
-    existing_paths = {l.strip() for l in SAMPLE_TXT.read_text().splitlines() if l.strip()}
+    existing_paths = {line.strip() for line in SAMPLE_TXT.read_text().splitlines() if line.strip()}
     print(f"Existing test_split images: {len(existing_paths)}")
 
     IMAGES_OUT.mkdir(parents=True, exist_ok=True)
     LABELS_OUT.mkdir(parents=True, exist_ok=True)
 
-    print(f"Scanning zip for violation-bearing labels (this takes ~30s)...")
+    print("Scanning zip for violation-bearing labels (this takes ~30s)...")
     candidates: list[tuple[str, str]] = []  # (image_path, label_path)
 
     with zipfile.ZipFile(ZIP_PATH) as z:
@@ -112,7 +112,7 @@ def main() -> None:
 
     print(f"\nAppended {N_NEW} paths to {SAMPLE_TXT}")
     print(f"Total test_split now: {len(existing_paths) + N_NEW}")
-    print(f"\nNext: python -m evaluation.golden_set.build_ground_truth")
+    print("\nNext: python -m evaluation.golden_set.build_ground_truth")
 
 
 if __name__ == "__main__":

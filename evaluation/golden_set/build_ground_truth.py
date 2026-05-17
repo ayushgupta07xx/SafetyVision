@@ -103,7 +103,7 @@ def build_test_split_cases(class_names: dict[int, str]) -> dict:
     """Build cases for the 10 test_split images from YOLO labels."""
     if not SAMPLE_TXT.exists():
         sys.exit(f"{SAMPLE_TXT} not found — original test image paths needed for traceability.")
-    original_paths = [l.strip() for l in SAMPLE_TXT.read_text().splitlines() if l.strip()]
+    original_paths = [line.strip() for line in SAMPLE_TXT.read_text().splitlines() if line.strip()]
 
     cases = {}
     for i, orig in enumerate(original_paths, 1):

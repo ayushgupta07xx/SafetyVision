@@ -14,7 +14,6 @@ import logging
 import os
 import sqlite3
 from pathlib import Path
-from typing import Tuple
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -73,7 +72,7 @@ def forecast_compliance(
     db_path: Path = DB_PATH,
     history_days: int = 30,
     horizon_days: int = 7,
-) -> Tuple[pd.DataFrame, go.Figure]:
+) -> tuple[pd.DataFrame, go.Figure]:
     """Fit Prophet, return (full_forecast_df, plotly_figure)."""
     df = load_compliance_series(violation_type, db_path, history_days)
     if len(df) < 14:

@@ -35,8 +35,7 @@ import shap
 import torch
 import torch.nn as nn
 from huggingface_hub import hf_hub_download
-from pytorch_grad_cam import GradCAM, HiResCAM
-from pytorch_grad_cam.utils.image import show_cam_on_image
+from pytorch_grad_cam import GradCAM
 
 from core.detector import HF_REPO, DetectionResult, draw_annotations
 

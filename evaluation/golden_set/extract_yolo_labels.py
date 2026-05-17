@@ -40,7 +40,7 @@ def main() -> None:
 
     LABELS_DIR.mkdir(parents=True, exist_ok=True)
 
-    image_paths = [l.strip() for l in SAMPLE_TXT.read_text().splitlines() if l.strip()]
+    image_paths = [line.strip() for line in SAMPLE_TXT.read_text().splitlines() if line.strip()]
     # Derive label paths: swap /images/ → /labels/ and .jpg → .txt
     label_paths = [
         p.replace("/images/", "/labels/").rsplit(".jpg", 1)[0] + ".txt"

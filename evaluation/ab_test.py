@@ -44,9 +44,9 @@ from tqdm import tqdm
 
 from agent.tools import generate_incident_report, retrieve_osha_context
 from core.detector import (
+    VIOLATION_CLASSES,
     PPEDetector,
     Violation,
-    VIOLATION_CLASSES,
 )
 
 warnings.filterwarnings("ignore")
@@ -157,9 +157,12 @@ def _compute_stats(per_case: list[dict]) -> dict:
 
 def _interpret_cohens_d(d: float) -> str:
     abs_d = abs(d)
-    if abs_d < 0.2: return "negligible"
-    if abs_d < 0.5: return "small"
-    if abs_d < 0.8: return "medium"
+    if abs_d < 0.2:
+        return "negligible"
+    if abs_d < 0.5:
+        return "small"
+    if abs_d < 0.8:
+        return "medium"
     return "large"
 
 
@@ -315,10 +318,14 @@ def run_threshold_ab(threshold_a: float, threshold_b: float, n_samples: int) -> 
             pred_b = any(d.cls in VIOLATION_CLASSES for d in detector.predict(img).detections)
             correct_b = (pred_b == gt)
 
-            if correct_a and correct_b:        cc += 1
-            elif correct_a and not correct_b:  cw += 1
-            elif not correct_a and correct_b:  wc += 1
-            else:                              ww += 1
+            if correct_a and correct_b:
+                cc += 1
+            elif correct_a and not correct_b:
+                cw += 1
+            elif not correct_a and correct_b:
+                wc += 1
+            else:
+                ww += 1
 
             per_image.append({
                 "image": image_name.rsplit("/", 1)[-1],
