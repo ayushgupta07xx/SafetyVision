@@ -1,0 +1,100 @@
+{
+  "_README": "Manual ground truth for the 10 Unsplash images. For each image, look at it and fill in: context, visible_classes (which PPE items you actually see, both worn and missing), and violations (a list of NO-X labels — empty list means the scene is fully compliant). The build script combines this with the test_split YOLO labels and applies the regulation_map. Valid class names: Hardhat, NO-Hardhat, Safety Vest, NO-Safety Vest, Mask, NO-Mask, Gloves, NO-Gloves, Goggles, NO-Goggles, No_Harness, Person, Fall-Detected. Valid contexts: 'construction' or 'general_industry'. After filling, set _filled=true.",
+  "_filled": true,
+  "construction_site_no_hardhat": {
+    "context": "construction",
+    "visible_classes": [
+      "Person",
+      "NO-Hardhat"
+    ],
+    "violations": [
+      "NO-Hardhat"
+    ]
+  },
+  "construction_site_workers": {
+    "context": "construction",
+    "visible_classes": [
+      "Person",
+      "Hardhat",
+      "Safety Vest"
+    ],
+    "violations": []
+  },
+  "construction_worker_hardhat": {
+    "context": "construction",
+    "visible_classes": [
+      "Person",
+      "Hardhat"
+    ],
+    "violations": []
+  },
+  "electrician_working": {
+    "context": "general_industry",
+    "visible_classes": [
+      "Person",
+      "NO-Goggles",
+      "Gloves"
+    ],
+    "violations": [
+      "NO-Goggles"
+    ]
+  },
+  "factory_worker_safety": {
+    "context": "general_industry",
+    "visible_classes": [
+      "Person",
+      "Hardhat"
+    ],
+    "violations": []
+  },
+  "roadwork_worker": {
+    "context": "construction",
+    "visible_classes": [
+      "Person",
+      "Hardhat",
+      "Safety Vest"
+    ],
+    "violations": []
+  },
+  "scaffolding_worker": {
+    "context": "construction",
+    "visible_classes": [
+      "Person",
+      "Hardhat",
+      "Safety Vest",
+      "Mask"
+    ],
+    "violations": []
+  },
+  "warehouse_worker_without_vest": {
+    "context": "general_industry",
+    "visible_classes": [
+      "Person",
+      "NO-Hardhat",
+      "NO-Safety Vest"
+    ],
+    "violations": [
+      "NO-Safety Vest",
+      "NO-Hardhat"
+    ]
+  },
+  "welder_protective_equipment": {
+    "context": "general_industry",
+    "visible_classes": [
+      "Person",
+      "Gloves",
+      "Mask"
+    ],
+    "violations": []
+  },
+  "worker_no_helmet_site": {
+    "context": "construction",
+    "visible_classes": [
+      "Person",
+      "NO-Hardhat"
+    ],
+    "violations": [
+      "NO-Hardhat"
+    ]
+  }
+}

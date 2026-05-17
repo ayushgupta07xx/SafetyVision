@@ -1,0 +1,14 @@
+artifact_uri: file:///home/ayushgupta15062003/safetyvision/mlruns/175154394681775965/1af7f30ea44b4a8d99b3595bb2b3c6c2/artifacts
+end_time: 1778976494184
+entry_point_name: ''
+experiment_id: '175154394681775965'
+lifecycle_stage: active
+run_id: 1af7f30ea44b4a8d99b3595bb2b3c6c2
+run_name: threshold_ab
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778976474468
+status: 3
+tags: []
+user_id: ayushgupta15062003

@@ -1,0 +1,383 @@
+{
+  "test": "paired t-test (with-RAG vs without-RAG)",
+  "n_cases": 7,
+  "variant_a_label": "with-RAG (Qdrant + BGE retrieval)",
+  "variant_b_label": "without-RAG (Gemini zero-shot)",
+  "variant_a_mean": 4.238095238095238,
+  "variant_a_std": 0.7126966450997985,
+  "variant_b_mean": 3.666666666666667,
+  "variant_b_std": 4.796711693331816e-16,
+  "mean_diff": 0.5714285714285714,
+  "t_statistic": 2.1213203435596424,
+  "p_value": 0.07814074941121583,
+  "cohens_d": 0.801783725737273,
+  "effect_size_interp": "large",
+  "winner": "with-RAG",
+  "significant_at_0.05": false,
+  "per_case": [
+    {
+      "case_id": "img_test_01",
+      "violation_type": "NO-Hardhat",
+      "expected_regulation": "29 CFR 1926.100",
+      "score_a": 5.0,
+      "score_b": 3.6666666666666665,
+      "judgment": {
+        "report_a": {
+          "regulation_accuracy": 5,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "report_b": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "rationale": "Report A accurately cites the expected OSHA regulation and provides specific corrective actions, while Report B fails to cite the correct regulation despite providing relevant corrective actions."
+      },
+      "report_a": {
+        "violation_type": "NO-Hardhat",
+        "risk_level": "HIGH",
+        "regulation_cited": "29 CFR 1926.100(a)",
+        "summary": "An employee was identified in a work area without the required head protection. This violation poses a significant risk of head injury from falling objects or impact, which is a direct breach of construction safety standards.",
+        "corrective_actions": [
+          "Require the employee to immediately don a protective helmet before continuing work.",
+          "Verify that the head protection provided meets ANSI Z89.1-2009, Z89.1-2003, or Z89.1-1997 standards as per 1926.100(b)(1).",
+          "Restrict the employee's access to the work zone until full PPE compliance is verified."
+        ],
+        "image_observations": "The subject is clearly visible in the frame without any protective headwear. The AI detection system has flagged the individual with a confidence score of 1.000, confirming the absence of a hardhat.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Immediate",
+        "regulation_text": "Employees working in areas where there is a possible danger of head injury from impact, or from falling or flying objects, or from electrical shock and burns, shall be protected by protective helmets."
+      },
+      "report_b": {
+        "violation_type": "NO-Hardhat",
+        "risk_level": "HIGH",
+        "regulation_cited": "Insufficient context to cite specific regulation",
+        "summary": "The AI detection system identified an individual without required head protection. Because no specific OSHA regulation excerpts were provided in the context, a specific 29 CFR citation cannot be accurately assigned. However, the absence of a hardhat in a designated hazardous area typically constitutes a high-risk violation due to the potential for head injuries from falling objects or impact.",
+        "corrective_actions": [
+          "Immediately remove the individual from the work area until a compliant hardhat is donned.",
+          "Verify that the individual has been issued appropriate PPE and has completed the required safety orientation.",
+          "Inspect the work area for overhead hazards that necessitate head protection."
+        ],
+        "image_observations": "The image shows a close-up of an individual from the chest up wearing a white zip-up sweater. The head is completely uncovered with no hardhat or protective gear visible. The background contains indoor plants and a window, suggesting a non-industrial setting, though the AI has flagged it as a violation zone.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Immediate (within 1 hour)",
+        "regulation_text": "No OSHA regulation context was provided in the source data to allow for a specific citation."
+      },
+      "latency_a_s": 15.26,
+      "latency_b_s": 7.41
+    },
+    {
+      "case_id": "img_test_02",
+      "violation_type": "NO-Hardhat",
+      "expected_regulation": "29 CFR 1926.100",
+      "score_a": 3.6666666666666665,
+      "score_b": 3.6666666666666665,
+      "judgment": {
+        "report_a": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "report_b": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "rationale": "Both reports inaccurately cite the regulation, but provide relevant and faithful corrective actions and observations."
+      },
+      "report_a": {
+        "violation_type": "NO-Hardhat",
+        "risk_level": "LOW",
+        "regulation_cited": "29 CFR 1910.135(a)(1)",
+        "summary": "The AI system detected personnel without head protection; however, visual review confirms the environment is a retail or commercial display area rather than a construction or industrial site. Per OSHA standards, head protection is only mandatory where there is a potential for injury from falling objects, which is not evident in this scene.",
+        "corrective_actions": [
+          "Perform a site hazard assessment to determine if the monitored area contains overhead hazards requiring PPE",
+          "Adjust AI detection parameters to exclude non-hazardous retail zones to prevent false positive alerts",
+          "Verify that the individuals in the frame are employees subject to OSHA standards rather than customers"
+        ],
+        "image_observations": "The image shows several individuals in a retail setting inspecting gift boxes and merchandise. There are decorative red lanterns hanging from the ceiling, but no signs of construction, heavy machinery, or unstable overhead loads are visible.",
+        "confidence": 1.0,
+        "follow_up_timeline": "72 hours for AI system zone recalibration",
+        "regulation_text": "The employer shall ensure that each affected employee wears a protective helmet when working in areas where there is a potential for injury to the head from falling objects."
+      },
+      "report_b": {
+        "violation_type": "NO-Hardhat",
+        "risk_level": "LOW",
+        "regulation_cited": "Insufficient context to cite specific regulation",
+        "summary": "The AI system flagged a hard hat violation in a retail or commercial showroom environment. Based on the image, there are no visible overhead hazards, construction activities, or falling object risks that would necessitate head protection under standard safety protocols. Because no OSHA regulation context was provided in the prompt to define this as a high-risk zone, the detection appears to be a false positive regarding actual safety risk.",
+        "corrective_actions": [
+          "Conduct a formal Job Hazard Analysis (JHA) to determine if head protection is required in this specific zone",
+          "Recalibrate the AI detection system to exclude retail and low-risk pedestrian areas from PPE monitoring",
+          "Verify if the facility has internal policies requiring PPE that exceed OSHA minimum standards"
+        ],
+        "image_observations": "The image shows several individuals in civilian clothing browsing merchandise (gift boxes) in a retail setting. There is no evidence of industrial machinery, suspended loads, or construction work in the vicinity.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Within 72 hours",
+        "regulation_text": "No OSHA regulation context was provided to support the requirement of head protection in this specific environment."
+      },
+      "latency_a_s": 17.47,
+      "latency_b_s": 6.83
+    },
+    {
+      "case_id": "img_test_04",
+      "violation_type": "NO-Gloves",
+      "expected_regulation": "29 CFR 1926.95",
+      "score_a": 3.6666666666666665,
+      "score_b": 3.6666666666666665,
+      "judgment": {
+        "report_a": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "report_b": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "rationale": "Both reports inaccurately cite the OSHA regulation, but provide relevant and faithful corrective actions and descriptions for the 'NO-Gloves' violation."
+      },
+      "report_a": {
+        "violation_type": "NO-Gloves",
+        "risk_level": "MEDIUM",
+        "regulation_cited": "29 CFR 1910.138(a)",
+        "summary": "An individual was identified in the PP-2 PACKING area without required hand protection. While the primary workers handling the product are equipped with green protective gloves, a third person in the background is observed with bare hands in an active production zone, violating the general requirements for hand protection.",
+        "corrective_actions": [
+          "Immediately provide the non-compliant individual with appropriate hand protection or remove them from the packing zone.",
+          "Enforce a strict PPE entry policy for all personnel entering the PP-2 PACKING area, regardless of their direct involvement in material handling.",
+          "Review the hazard assessment for the packing area to ensure all personnel are aware of the specific risks requiring glove use."
+        ],
+        "image_observations": "The image shows two workers at a packing station wearing green gloves while handling white cylindrical items. A third individual is visible in the background (top center-right) sitting or standing near the equipment without any hand protection.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Within 24 hours",
+        "regulation_text": "Employers shall select and require employees to use appropriate hand protection when employees' hands are exposed to hazards such as those from skin absorption of harmful substances; severe cuts or lacerations; severe abrasions; punctures; chemical burns; thermal burns; and harmful temperature extremes."
+      },
+      "report_b": {
+        "violation_type": "NO-Gloves",
+        "risk_level": "MEDIUM",
+        "regulation_cited": "Insufficient context to cite specific regulation",
+        "summary": "A 'NO-Gloves' violation was detected at the PP-2 Packing station. Visual inspection confirms that while the worker on the left is wearing protective gloves on both hands, the worker on the right is handling product with a bare left hand, despite wearing a protective sleeve on that arm. Additionally, a third individual in the background is observed without hand protection. Specific OSHA citations are omitted as no regulation context was provided in the source material.",
+        "corrective_actions": [
+          "Immediately require the worker on the right to don a compliant glove on their left hand.",
+          "Ensure the individual in the background is equipped with required PPE or relocated from the production zone.",
+          "Conduct a spot check of the packing line to ensure all workers are wearing dual-hand protection."
+        ],
+        "image_observations": "Two workers are at a packing table handling white rolls. The worker on the left is wearing green gloves on both hands. The worker on the right has a green glove on their right hand, but their left hand is bare and touching the product. A third person is seated in the background without gloves.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Immediate",
+        "regulation_text": "No OSHA regulation context was provided to cite a specific standard."
+      },
+      "latency_a_s": 10.41,
+      "latency_b_s": 23.65
+    },
+    {
+      "case_id": "img_test_11",
+      "violation_type": "NO-Hardhat",
+      "expected_regulation": "29 CFR 1926.100",
+      "score_a": 5.0,
+      "score_b": 3.6666666666666665,
+      "judgment": {
+        "report_a": {
+          "regulation_accuracy": 5,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "report_b": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "rationale": "Report A accurately cites the expected OSHA regulation and provides specific corrective actions, while Report B fails to cite the regulation despite providing relevant corrective actions."
+      },
+      "report_a": {
+        "violation_type": "NO-Hardhat",
+        "risk_level": "HIGH",
+        "regulation_cited": "29 CFR 1926.100(a)",
+        "summary": "An individual was detected on a construction site without required head protection in an area where the majority of personnel are wearing hardhats, indicating a clear hazard zone. This constitutes a direct violation of safety standards regarding falling or flying object hazards.",
+        "corrective_actions": [
+          "Immediately remove the non-compliant individual from the work area.",
+          "Provide the individual with a protective helmet that meets ANSI Z89.1 specifications as required by 1926.100(b)(1).",
+          "Verify that all site visitors and personnel have passed a safety induction before entering the active construction zone."
+        ],
+        "image_observations": "The image shows a group of people in a construction environment with visible rebar and safety fencing. While most individuals are wearing red or white hardhats, one individual in a black graphic t-shirt and tan pants is standing in the center-left of the group without any head protection. Another individual in a striped shirt in the background also appears to be missing a hardhat.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Immediate - Personnel must be equipped or removed from the site area instantly.",
+        "regulation_text": "Employees working in areas where there is a possible danger of head injury from impact, or from falling or flying objects, or from electrical shock and burns, shall be protected by protective helmets."
+      },
+      "report_b": {
+        "violation_type": "NO-Hardhat",
+        "risk_level": "HIGH",
+        "regulation_cited": "Insufficient context to cite specific regulation",
+        "summary": "Multiple individuals are observed on an active construction site without required head protection. While the majority of the group is wearing red or white hard hats, several individuals in the background and mid-ground are non-compliant. Because no OSHA regulation text was provided in the context, a specific 29 CFR citation cannot be formally applied in this report.",
+        "corrective_actions": [
+          "Immediately escort all individuals without head protection away from the active construction zone.",
+          "Provide compliant hard hats to all personnel and visitors before they are permitted to re-enter the site.",
+          "Install 'Hard Hat Area' signage at all site access points to ensure compliance for all entrants."
+        ],
+        "image_observations": "The image depicts a large group of people on a construction site. While the foreground subjects are equipped with red and white hard hats, at least three individuals in the background (including one in a striped shirt and others further back) are clearly visible without any protective headgear.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Immediate",
+        "regulation_text": "No OSHA regulation context was provided for citation."
+      },
+      "latency_a_s": 7.54,
+      "latency_b_s": 8.73
+    },
+    {
+      "case_id": "img_test_12",
+      "violation_type": "NO-Hardhat",
+      "expected_regulation": "29 CFR 1926.100",
+      "score_a": 5.0,
+      "score_b": 3.6666666666666665,
+      "judgment": {
+        "report_a": {
+          "regulation_accuracy": 5,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "report_b": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "rationale": "Report A accurately cites the expected OSHA regulation and provides specific corrective actions, while Report B fails to cite the correct regulation but still offers relevant and actionable corrective measures."
+      },
+      "report_a": {
+        "violation_type": "NO-Hardhat",
+        "risk_level": "LOW",
+        "regulation_cited": "29 CFR 1926.100(a)",
+        "summary": "The AI system flagged a 'NO-Hardhat' violation for individuals in a conference room setting. Per 29 CFR 1926.100(a), head protection is only required in areas where there is a 'possible danger of head injury from impact, or from falling or flying objects.' As the image depicts an administrative meeting in an office environment with no overhead hazards or construction activity, this detection is a false positive and does not constitute a regulatory violation.",
+        "corrective_actions": [
+          "Dismiss the current violation alert in the monitoring system",
+          "Recalibrate AI detection zones to exclude administrative offices and conference rooms",
+          "Update the computer vision model to include environmental context recognition to prevent false positives in non-hazardous areas"
+        ],
+        "image_observations": "The image shows approximately seven individuals seated around a large conference table in a finished office space. There are no signs of construction, exposed wiring, or overhead materials that would necessitate PPE.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Immediate",
+        "regulation_text": "Employees working in areas where there is a possible danger of head injury from impact, or from falling or flying objects, or from electrical shock and burns, shall be protected by protective helmets."
+      },
+      "report_b": {
+        "violation_type": "NO-Hardhat",
+        "risk_level": "LOW",
+        "regulation_cited": "Insufficient context to cite specific regulation",
+        "summary": "The AI system detected a lack of hardhats in a conference room setting. While the detection is technically correct, the individuals are in an administrative environment where head protection is not typically required. This is likely a false positive regarding safety compliance as no overhead hazards are present in the meeting area.",
+        "corrective_actions": [
+          "Define and exclude administrative/office zones from the AI monitoring system to prevent false alerts.",
+          "Ensure all personnel are briefed on the specific boundaries where PPE becomes mandatory when leaving the meeting area.",
+          "Verify that hardhats are stored at the entrance/exit points of the construction zone adjacent to this office."
+        ],
+        "image_observations": "The image shows multiple people seated at a conference table in a finished indoor office space. There is no evidence of active construction, falling object hazards, or low-hanging obstructions that would necessitate head protection.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Within 48 hours for system zone recalibration",
+        "regulation_text": "No OSHA regulation context was provided to cite specific 29 CFR standards."
+      },
+      "latency_a_s": 13.49,
+      "latency_b_s": 10.18
+    },
+    {
+      "case_id": "img_test_13",
+      "violation_type": "NO-Gloves",
+      "expected_regulation": "29 CFR 1926.95",
+      "score_a": 3.6666666666666665,
+      "score_b": 3.6666666666666665,
+      "judgment": {
+        "report_a": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "report_b": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "rationale": "Both reports inaccurately cite the OSHA regulation, but provide relevant and faithful descriptions of the violation and corrective actions."
+      },
+      "report_a": {
+        "violation_type": "NO-Gloves",
+        "risk_level": "MEDIUM",
+        "regulation_cited": "29 CFR 1910.138(a)",
+        "summary": "During automated monitoring of the PP-2 PACKING area, an employee in a white shirt was observed handling materials and working in close proximity to a conveyor system without required hand protection. While a nearby colleague is correctly utilizing green protective gloves, this individual is exposed to potential mechanical hazards including abrasions and lacerations from the packing equipment.",
+        "corrective_actions": [
+          "Immediately provide the employee with appropriate hand protection as determined by the site hazard assessment.",
+          "Verify that the specific gloves selected meet the performance characteristics required for the packing task per 1910.138(b).",
+          "Perform a spot-check of all personnel in the PP-2 PACKING zone to ensure universal compliance with PPE requirements."
+        ],
+        "image_observations": "The image displays a production environment labeled 'PP-2 PACKING'. A worker on the left is wearing green safety gloves while handling boxes. In contrast, the worker in the center-right (white shirt) is leaning over the conveyor belt with bare hands, and a third worker on the far right is operating machinery without visible hand protection.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Within 24 hours",
+        "regulation_text": "Employers shall select and require employees to use appropriate hand protection when employees' hands are exposed to hazards such as those from skin absorption of harmful substances; severe cuts or lacerations; severe abrasions; punctures; chemical burns; thermal burns; and harmful temperature extremes."
+      },
+      "report_b": {
+        "violation_type": "NO-Gloves",
+        "risk_level": "MEDIUM",
+        "regulation_cited": "Insufficient context to cite specific regulation",
+        "summary": "A worker in the PP-2 PACKING area was detected performing manual handling tasks without protective gloves. While a colleague in the foreground is correctly wearing green protective gloves, the worker in the white shirt in the background is operating near the conveyor and handling materials with bare hands. This presents a risk of skin abrasions, lacerations, or contact with contaminants. As no specific OSHA regulation text was provided in the context, a specific 29 CFR citation cannot be accurately applied.",
+        "corrective_actions": [
+          "Immediately instruct the worker in the white shirt to cease operations until proper hand protection is donned.",
+          "Provide the worker with a pair of compliant protective gloves suitable for the packing environment.",
+          "Verify that all personnel in the packing zone are equipped with the required PPE before resuming the shift."
+        ],
+        "image_observations": "The image shows a packing line with multiple workers. One worker in the foreground is wearing green gloves while handling white cylindrical items. However, a worker in a white shirt in the center-background is seen working at the conveyor belt with bare hands. Another individual on the far right also appears to be without hand protection.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Immediate (within 1 hour)",
+        "regulation_text": "No OSHA regulation context was provided in the source material to facilitate a specific citation."
+      },
+      "latency_a_s": 9.58,
+      "latency_b_s": 9.84
+    },
+    {
+      "case_id": "img_test_14",
+      "violation_type": "NO-Gloves",
+      "expected_regulation": "29 CFR 1926.95",
+      "score_a": 3.6666666666666665,
+      "score_b": 3.6666666666666665,
+      "judgment": {
+        "report_a": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "report_b": {
+          "regulation_accuracy": 1,
+          "action_relevance": 5,
+          "faithfulness": 5
+        },
+        "rationale": "Both reports accurately describe the violation and provide relevant corrective actions, but neither cites the expected OSHA regulation 29 CFR 1926.95, instead Report A cites a different but related regulation and Report B fails to cite any specific regulation."
+      },
+      "report_a": {
+        "violation_type": "NO-Gloves",
+        "risk_level": "MEDIUM",
+        "regulation_cited": "29 CFR 1910.138(a)",
+        "summary": "During the night shift at the PP-2 PACKING station, an employee was observed working at the conveyor belt without mandatory hand protection. While other personnel in the immediate vicinity are correctly wearing green protective gloves, this individual is handling materials with bare hands, creating a risk of abrasions or lacerations.",
+        "corrective_actions": [
+          "Immediately provide the employee with the required hand protection before they continue work.",
+          "Conduct a safety briefing for the night shift team regarding the mandatory use of hand protection in the packing area.",
+          "Ensure supervisors perform a PPE compliance check at the start of every shift at the PP-2 station."
+        ],
+        "image_observations": "The worker in the grey polo shirt at the center of the conveyor line is working with bare hands. Additionally, the worker in the foreground is handling white rolls without gloves. Two other workers in the frame are correctly wearing bright green protective gloves.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Within 24 hours",
+        "regulation_text": "Employers shall select and require employees to use appropriate hand protection when employees' hands are exposed to hazards such as those from skin absorption of harmful substances; severe cuts or lacerations; severe abrasions; punctures; chemical burns; thermal burns; and harmful temperature extremes."
+      },
+      "report_b": {
+        "violation_type": "NO-Gloves",
+        "risk_level": "MEDIUM",
+        "regulation_cited": "Insufficient context to cite specific regulation",
+        "summary": "The AI system detected a 'NO-Gloves' violation at the PP-2 Packing station. Workers are observed handling materials without hand protection, which is inconsistent with the PPE worn by other staff in the same vicinity. Specific OSHA regulation numbers cannot be cited as no regulatory context was provided in the input.",
+        "corrective_actions": [
+          "Immediately provide and require the use of protective gloves for all workers on the packing line.",
+          "Perform a spot check of all personnel in the PP-2 Packing area for full PPE compliance.",
+          "Review the Job Hazard Analysis (JHA) for this station to confirm glove requirements are clearly communicated."
+        ],
+        "image_observations": "The image shows a packing line at 02:34 AM. A worker in a grey shirt and a worker in the foreground are not wearing gloves while handling items. Two other workers are wearing green gloves. A 'no_mask' detection is also visible on the foreground worker.",
+        "confidence": 1.0,
+        "follow_up_timeline": "Immediate",
+        "regulation_text": "No OSHA regulation context was provided in the prompt."
+      },
+      "latency_a_s": 9.89,
+      "latency_b_s": 13.21
+    }
+  ]
+}

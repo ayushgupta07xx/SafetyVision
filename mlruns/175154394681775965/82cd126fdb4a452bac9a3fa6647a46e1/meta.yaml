@@ -1,0 +1,14 @@
+artifact_uri: file:///home/ayushgupta15062003/safetyvision/mlruns/175154394681775965/82cd126fdb4a452bac9a3fa6647a46e1/artifacts
+end_time: 1778976754841
+entry_point_name: ''
+experiment_id: '175154394681775965'
+lifecycle_stage: active
+run_id: 82cd126fdb4a452bac9a3fa6647a46e1
+run_name: prompt_ab
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778976578452
+status: 3
+tags: []
+user_id: ayushgupta15062003

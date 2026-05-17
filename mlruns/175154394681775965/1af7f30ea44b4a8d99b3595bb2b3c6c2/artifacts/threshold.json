@@ -1,0 +1,1619 @@
+{
+  "test": "McNemar's test (exact binomial on discordant pairs)",
+  "threshold_a": 0.4,
+  "threshold_b": 0.55,
+  "n_cases": 200,
+  "contingency": {
+    "a_right_b_right": 133,
+    "a_right_b_wrong": 19,
+    "a_wrong_b_right": 1,
+    "a_wrong_b_wrong": 47
+  },
+  "accuracy_a": 0.76,
+  "accuracy_b": 0.67,
+  "p_value": 4.00543212890625e-05,
+  "significant_at_0.05": true,
+  "winner": "threshold=0.4",
+  "per_image": [
+    {
+      "image": "image_638_jpg.rf.94c27827545f0492f6c5237b374191e5.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_160_jpg.rf.621fd8c5f70c047e1b1669ec4fc7c0b8.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "445-72_jpg.rf.259c303a002f04b7550242db9b82da54.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "ppe_0746_jpg.rf.60a35e91ca6e2f8a2a64300c94cfbf29.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": true,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "01185_jpg.rf.96f28978589147ca732112976e03f4f8.jpg",
+      "gt_has_violation": false,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": true
+    },
+    {
+      "image": "IMG_5024_mp4-3_jpg.rf.94b18262187e456bf4575660a2bc4d7e.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "Mask-detector1_mov-5_jpg.rf.3584a4f92c27ced225a7187aca52c8c3.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "002712_jpg.rf.06791b9d313ca561240347b00fed401b.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-4974-_png_jpg.rf.07f0f0db40ca824bb0f90f52248d902c.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "N5h_img_227_jpg.rf.e88d3132880f2f55ccf9cd5e8deab8d4.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_170_jpg.rf.d577f17779af4d2c8e8d776a91b77e1c.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "people-3803-_jpg.rf.5e042926c1290a20e936839fb9bd2ad9.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "people-5183-_jpg.rf.1f570edb81877dde350d3f71c1aff946.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "-633-_png_jpg.rf.d2b5651ccad1bad1fa0f546d347e0c6f.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "videoplayback-1-_mp4-35_jpg.rf.5170a1f91bdeba14d2578d529f8011c7.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": true,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "packing1597_jpg.rf.720d269d44e21d988eec14c1197b46c6.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "417_jpg.rf.7340ddc7a006ea8803d235fc8d495441.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "img_13_jpg.rf.05be830d57be7d6dff4ab239b6317a21.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "ppe_1324_jpg.rf.6e1f062c015b6a790f7df7c61bb2374f.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "ppe_0354_jpg.rf.76ca43271853edb96e670268ae58db52.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "IMG_3094_mp4-23_jpg.rf.ccb08fb75c9f756739b9d09d98db0d54.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "image_108_jpg.rf.41634e0a300e6c39cf6f816528e8f48c.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_199_jpg.rf.dd0247f36e9940e2c2e75ea55da2d545.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "IMG_0873_MOV-13_jpg.rf.e239e3fce7f3d8ba63d0c04316ea7dea.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "004587_jpg.rf.231699ffc9dbb3d8ee7bc0b8afb6d52e.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "mask-wearing-1632937926375_png_jpg.rf.ede735477a121b00af6eb6102e59ac3d.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "013_jpg.rf.2ab0c865f44bb664de8d154bf5b2d6a1.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "pos_1653_jpg.rf.047e39be4f9f6c9a086d9970abb3c0b8.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "e465e1280aeabfb7859f1d151d11102d_jpg.rf.134df2f3570646f3b7748de49162426e.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-4810-_png_jpg.rf.3b559563d1b4b8f2e7dcbcab2b201ce7.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "people-3611-_jpg.rf.c23c376590047277ebf104ced9955874.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "-535-_png_jpg.rf.57167aeeb0042af919b9f757d4424bd0.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "nglovpp2124_jpg.rf.ac76c7ee79466b1dec4dde5f220bc66a.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "amz_01882_png_jpg.rf.3747f445f394f41f16fa020f6647ba1a.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_568_jpg.rf.09d6e3dfb45c105223d5d69afae71f57.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "-2922-_png_jpg.rf.3e2b0b3e946c75dad8b11256407fb655.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "PP02img797_jpg.rf.f36958016254a9723bf18baad55d5ca0.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "people-8231-_jpg.rf.e23accc37d328b7d983eb1643779eaeb.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "-1336-_png_jpg.rf.4ee59a1ea5896737f77f677e28c67bf1.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "kp1029_jpg.rf.91009ec03fec8e9404b77ab853b9166a.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "776_jpg.rf.8389560438fe19f7c901ef344cda7c94.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "gettyimages-1266805986-612x612_jpg.rf.eaed78de31cf566e240687722865c499.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "people-4566-_jpg.rf.b5d7154612c17607f0f66f8e4e1d2dfd.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "-4683-_png_jpg.rf.990c50e3d9a3263d241a7d9e89ceea21.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "mask-wearing-1632938145013_png_jpg.rf.5b47deb1d7ef0af409392fae1a56d019.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "people-2520-_jpg.rf.a97cb6abd681f9af0757e35481d2ef48.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "294_jpg.rf.ef7baee388f6f81b3250e9c46c85f9ae.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "ppe_1022_jpg.rf.e004ed3c902b3f226fa9e9edb74ed544.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "mask-wearing-tests_mohamed_mp4-21_jpg.rf.b976ba2c3ac7941cdbfc01fb1d3e6ecf.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "-3344-_png_jpg.rf.b7b7576bc9ead41e2b547db3f0bdf0cd.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "frame97_jpg.rf.05c85570929a308d8e4023d9e8df60ba.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "002256_jpg.rf.7ad8c072856a18a048ec73beb9141c13.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "IMG_1493_mp4-52_jpg.rf.c748183328e380a4411b71b8f1cc7586.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "005399_jpg.rf.c4c25980ef9ccd78f44a6c7fd9d3a1af.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "kp1936_jpg.rf.211be46d959c3e40a6c7849cd33e1497.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "ppe_0623_jpg.rf.4677b00923f939aa66587aed23db8edb.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "007055_jpg.rf.4b02e2946abec3fb53ad5842b0d3b461.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "packing716_jpg.rf.5d95aecaf8454a92fc56101ef3ad4d21.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "006855_jpg.rf.d651f0898f73df7773fe56c9d06ad513.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-2633-_png_jpg.rf.0f3d6af674a141be2ed66eabed2b00b9.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "000449_jpg.rf.b58dd8058e7450c63c0f5cc7bf7e29f5.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": true,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-205-_png_jpg.rf.a65db86ca684b971175e78f5e16b38af.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "006328_jpg.rf.78003be717f7690648d3e6275f012257.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "office5_jpg.rf.881da26fa350f0ecf8780ed7732590e8.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "img_015_png_jpg.rf.0097caffdba6caebe9d62cbf1f65307c.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-4690-_png_jpg.rf.e9880dd6efe34882eb10d58cdb7edb4d.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "kp103_jpg.rf.c83a0155e4e84f834ee779767bacb11c.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "-4953-_png_jpg.rf.44f3eff305d081057ed9435888b56eee.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "003660_jpg.rf.a035068e878aa5f764ee21f10a77d08f.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "YouTube-FREE-AerialStockFootage_CityUrban-YKY3Mm5P1tE-720p_mp4-7_jpg.rf.1de80bc1b00e9c56e071b8a2dda0754f.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "skidpad_mp4-0_jpg.rf.52079923e127a7be0bc445f48d34ee20.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-1261-_png_jpg.rf.faadb0bb991b5bb25c81753ef37c0eba.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_163_jpg.rf.3fcd9f5d63259942cd042dc55b5b6255.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "class2_002_jpg.rf.346c1f5c45993cc814791da31fa7c09e.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "003048_jpg.rf.c7681a9982cc0188de89ea8bf3436cc1.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "people-3040-_jpg.rf.a7933e2af791695bab48d7ee8d5d7226.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "image_73_jpg.rf.9f596ad14face6f87837ba2263bd9075.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "497_jpg.rf.e433e6dc3f38fda496f6566e82db69d0.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-354-_png_jpg.rf.8a02f18f3e8ab712803550b0dd237ebf.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "IMG_0871_MOV-20_jpg.rf.5c3fdd80d195d71eac3a9be301caa166.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "kp224_jpg.rf.3517146d926d3ac08e9442139eac0d33.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "PP02img1309_jpg.rf.a341647652f519ea470685532c13d09c.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "people-6287-_jpg.rf.c9e00f4a8e8fe19f72e50e7b8793fd76.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "image_66_jpg.rf.624e67c0f5457cd71aa4ad821bee7d8f.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "002005_jpg.rf.c43d6a28c88a0f2e38d2baf51b2372f8.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "frame440_jpg.rf.d1dfcc9ee56cf11e5957da67502c102d.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "p65213185_jpg.rf.b9d08d4a1a79ca70f7eec9d4d7e0e634.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-3551-_png_jpg.rf.c6ff30051b06af84a36a2e642fa39229.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "002424_jpg.rf.e7fabb9004d94a4ab362e54afa0070ba.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "ppe_0754_jpg.rf.b9bbd82be49dfb87a8df2c5decad4804.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "004304_jpg.rf.36c453746a8fa6e1afe68e179c1610e6.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "ppe_1145_jpg.rf.eb626f9d56b5926df43ee9a78e05a593.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "image_982_jpg.rf.b7a9466c52b833ee4fedd398aba53b9c.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "001704_jpg.rf.af46b74403800e8d828aaa29844947c4.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-990-_png_jpg.rf.82538fc6546fe012b3db29205b5e1af0.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "001246_jpg.rf.f1b0967fefb8f22f1bd740d8662fa50a.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "003691_jpg.rf.a3a22730a796719b42f6d45c9534e7f8.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "Video1_163_jpg.rf.6a0556e9522dca4f3018eb9b61eb458a.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "006612_jpg.rf.89347e44aa586be75440900c3fb23b92.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "images-2022-07-04T013738_jpg.rf.bb6c3d8ea753001ab4f2635caefaeabf.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "003868_jpg.rf.4bbde68ca3eb867ca06720469533c89c.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "Aitin1788_jpg.rf.f2b5d9272a1faff183cebcd6d7f2f6d3.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "people-8822-_jpg.rf.cc3fa75878e1c2e94e90bf99b1dd877a.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "autox3_mp4-140_jpg.rf.7cffda20f1b4db054548d1f85919ef35.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "packing42_jpg.rf.a8ce88bab3d8bf8953f4904de1d66bbd.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "IMG_9950-1-_mp4-35_jpg.rf.222ac7f066552b40e1599e271ecc4f4e.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "001171_jpg.rf.bab64b70ab8fe9973fec930cff797dcc.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "front_crawling_00927_jpg.rf.5d18ddfd970d7f1682a0f79e142179f3.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "1042977068_jpg.rf.396a44fff1ec1873ec973d12575ae0b1.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-4303-_png_jpg.rf.567bfadb5ff90cd6c920235c3b31f5e8.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "packing591_jpg.rf.2b347d69777aced6785a01c25f1a5b6d.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "RPReplay_Final1667001201_MP4-368_jpg.rf.a13611120cc45b49f273e3be5e42e028.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "-1461-_png_jpg.rf.372fb34057a3899cd568994461742aee.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "ppe_0286_jpg.rf.2549525001b6c720dd1f716ba64600bc.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-3170-_png_jpg.rf.a16d9ee678897f8df9eed5e716130db3.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "din_82_jpg.rf.f1c119b2779344fa1ad59db2f6a9518e.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "IMG_1703_jpg.rf.8962573caaed33503f253dd1bdf5f906.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_126_jpg.rf.95624986864f58e5eb7c47225b41acd2.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_382_jpg.rf.a3214e68bc4ace15401783f19e7d2f7c.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "dataFeature-Text-Block3_jpg.rf.a245c08d5792b632263eb96481b7fa46.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_42_jpg.rf.c8388df48096fe3cff14a672f4aa5a7c.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_188_jpg.rf.e6af080849ce823b8ee0500d1e7dc5fb.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "img250_jpg.rf.1de4cdd79350ab3f612faa2d0c07725e.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "helmet999865_jpg.rf.5f7ae501d65bff499b4ef08fcde3d2ba.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-783-_png_jpg.rf.674857e034b49d1bf19641619329185b.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "02621_jpg.rf.172940b562244a88ec5da9b1ef6b086f.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-2668-_png_jpg.rf.301f100789266d73c68062c223159d38.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_1001_jpg.rf.795305daa7242947c2b8a37c9191fcd4.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "image_368_jpg.rf.b565d39610cd27833336995a97006bed.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "kp338_jpg.rf.3524ac05e54253f6807a7ed7de51cdf6.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "IMG_5024_mp4-3_jpg.rf.0a72e5d169ab518876c9cc6a14fbddec.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "YouTube-FreeStockFootage_Child-playing-with-parents-JoyLaughterHD-RQ_qqCZOkZk-720p_mp4-35_jpg.rf.988277b1e931f774e4d8e6fa1ffe83cd.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": true,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "IMG_4920_mov-13_jpg.rf.e4e9f486115eac22ae2aca1f4e4990c3.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "YouTube-FreeStockFootage-PersonThinkingDeeply-h-HC-hj-Zo-720p_mp4-9_jpg.rf.3c31b2df1076aedb5f5282e494c28cd7.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "000174_jpg.rf.cd6f259d43ed59a76c6ed3834b665c04.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "academy_SafetyRespect_9714b_jpg.rf.da535328a193a5ede50152306759218b.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "IMG_3100_mp4-29_jpg.rf.1f6990db633beee96a0d48b5ec4e8591.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "Movie-on-10-31-22-at-10_08-AM_mov-17_jpg.rf.6dd486e2209b458a76acd8ce85e13869.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_174_jpg.rf.b6b4b1fdf9ee9ab266771d1a8c71fb10.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "Video1_186_jpg.rf.d4974d52217e4a512064c51f2b5c0d20.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "kp1754_jpg.rf.540abb0ce9827500651754432b875d79.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "-4664-_png_jpg.rf.c6eca1bf907fc0b9b71211c1e4b6347f.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "kp173_jpg.rf.87c8cc8cddb43f7afc9726b55ff9f014.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "img_044_jpg.rf.4a68779aac082375b745c4e14ebc8105.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "PP02img1185_jpg.rf.0768b38f42994e513fe29020c1161bf6.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-418-_png_jpg.rf.eabdbaee1a86619cd5b13f7961d28583.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "packing711_jpg.rf.fc6e458a0328420805d32ad5ff6cc8ad.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "Speak_louder_-2816872770121-29_jpg.rf.e45ac454ac4ee4383579b404db4f3e7e.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "autox3_mp4-69_jpg.rf.4d2890ca182e560abf0c2af6ee74b243.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "p656213169_jpg.rf.3942a6173fbcbe4baeb3d3ba87c33153.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": true,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "people-4378-_jpg.rf.8bbefab5019bf4adadb4bd30da63828a.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "002072_jpg.rf.d1dedccdac0d44f033d0a090e84cb252.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "PP02img1246_jpg.rf.15bed9bd2c9dbbd3d1fbb71d55ed9764.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "kp1339_jpg.rf.e8666180b7c8f5a15b337576f4c9e1f0.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "RTX1GIDS_jpg.rf.026bd2b9282f440d6e909f6e13be556a.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "images-2022-07-04T013441_jpg.rf.856ead2b81bb61907ba18dddb3cf8637.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "ppe_1227_jpg.rf.c55f66c7c71b169d5ac082035cb2a92f.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "005359_jpg.rf.f44c06674612614bdc6879c66015f1b1.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "RPReplay_Final1667001201_MP4-207_jpg.rf.59a22515ff6478edd7c41f362089cf1d.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "image_14_jpg.rf.c5173aab1576c76799fa6313436a7fbe.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "ppe_1003_jpg.rf.ae2bedc658f4b3d3042cbe90f6579ef2.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "temporary-edge-protection_leading-edge_work-restraint-training_jpg.rf.f0ac69a4c42898111dfe11c3c7fb5ed8.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "kp1868_jpg.rf.ca4e69f257c3b4f5e035cd93a5ad2fa4.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "20220721_124131_jpg.rf.c1255072594d8cab084709fb26abe657.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "image_155_jpg.rf.99639d2fe63490d59e88813f9e25d7d9.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "din_1349_jpg.rf.c24bdbfbc405e1aea9572bdcdccd8be0.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "26-04-2009_02_jpg.rf.dbb7918f9b232d18a70338a363662c99.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "frame1320_jpg.rf.e3a4f27b71ebeb58a054ac9d5692abc9.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "-1199-_png_jpg.rf.b5cfda057715bcdcf4c8cbeb57d0a741.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "frame549_jpg.rf.32f6f7c0e700b52841e29812c0b49ed1.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "Twalv1052_jpg.rf.d196b44635352d508f1625e17d84d8bd.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "1_13_jpg.rf.973212fd698f89b82f80148c6f86524c.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "006359_jpg.rf.18a446388013e8679f77093a77620254.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "PP02img228_jpg.rf.720639333fde11ec3603b5eb372d7c59.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "img448_jpg.rf.296920b47c98db6bae5184358142bbc0.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "IMG_6622_mp4-21_jpg.rf.3331ea994a1aa8b6585f67adfc46aa47.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "frame1321_jpg.rf.f404157a0f659e243569ee88116dc0fa.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "image_444_jpg.rf.f46c1d90da5e85542fd8420db9d6bbd5.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-1183-_png_jpg.rf.90d69f23e821cdb61fd929bcd6efbe13.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "000708_jpg.rf.c9a9406329189fa2cf943dd76118aa49.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "packing628_jpg.rf.286b830ef3af30446d959cc72a46743b.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "people-3961-_jpg.rf.b8db23689dc04a04a0f8646a0480605d.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "5kmfgfa19znh_jpg.rf.65393918c955cbf9681d2a442a3b355b.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "-1056-_png_jpg.rf.0384ceb06330ec92664b1f88003ef96b.jpg",
+      "gt_has_violation": false,
+      "pred_a": true,
+      "pred_b": true,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "people-2862-_jpg.rf.dd16f21924a3741b60f0209485c778f3.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "YouTube-FreeStockFootage-PersonThinkingDeeply-h-HC-hj-Zo-720p_mp4-7_jpg.rf.0e1fd23d726a9643d0965354db1b518f.jpg",
+      "gt_has_violation": true,
+      "pred_a": true,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": false
+    },
+    {
+      "image": "005950_jpg.rf.53728ae1d2f1631e35e829c08fea854a.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "people-1543-_jpg.rf.fa357d7c49037ef9708f460cabce52f4.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "kp344_jpg.rf.c9f8fb961706751359cbaf19053146e9.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "889_jpg.rf.1f6e7f2951ecdeec715be62738d6da1a.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "PP02img437_jpg.rf.11b2b6eaccb8980e135ce1639ef32ecb.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "img45_jpg.rf.2a65f49b00172fda58f66dad259b61e4.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "nglov52_jpg.rf.f6f2f2f86cbe2352d159935aaaf17b7d.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "people-8794-_jpg.rf.ee2ce47dc47741f0d6500ca8b50c279e.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "people-3848-_jpg.rf.e3b1c02cf89e3d9041e1cd8904f0e202.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "youtube-21_jpg.rf.6bf032f74c09699a25fe242bab043b38.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "test3_mp4-75_jpg.rf.1da9d513d50885e01a75e2db1567531a.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    },
+    {
+      "image": "ppe_1035_jpg.rf.c0ff301d590eed7b34a73a9d4f6d844e.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "RPReplay_Final1667001201_MP4-361_jpg.rf.fc50c8dde984f1674ea23f540e878797.jpg",
+      "gt_has_violation": true,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": false,
+      "correct_b": false
+    },
+    {
+      "image": "4473118_jpg.rf.69b2d7c66cb6acbe1d472373a796eeaa.jpg",
+      "gt_has_violation": false,
+      "pred_a": false,
+      "pred_b": false,
+      "correct_a": true,
+      "correct_b": true
+    }
+  ]
+}

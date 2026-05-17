@@ -1,0 +1,8 @@
+artifact_location: file:///home/ayushgupta15062003/safetyvision/mlruns/175154394681775965
+creation_time: 1778976474403
+experiment_id: '175154394681775965'
+last_update_time: 1778976474403
+lifecycle_stage: active
+name: safetyvision-ab-tests
+trace_location: null
+workspace: default

@@ -1,0 +1,297 @@
+{
+  "img_test_01": {
+    "image_path": "evaluation/golden_set/images/test_split/img_test_01.jpg",
+    "source": "test_split",
+    "original_filename": "IMG_1493_mp4-52_jpg.rf.c748183328e380a4411b71b8f1cc7586.jpg",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "NO-Hardhat"
+      ],
+      "violations": [
+        {
+          "type": "NO-Hardhat",
+          "expected_regulation": "29 CFR 1926.100",
+          "expected_risk_level": "HIGH"
+        }
+      ]
+    }
+  },
+  "img_test_02": {
+    "image_path": "evaluation/golden_set/images/test_split/img_test_02.jpg",
+    "source": "test_split",
+    "original_filename": "002485_jpg.rf.fb253fc4f43b1b2dd101121f06a4c34f.jpg",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "NO-Hardhat"
+      ],
+      "violations": [
+        {
+          "type": "NO-Hardhat",
+          "expected_regulation": "29 CFR 1926.100",
+          "expected_risk_level": "HIGH"
+        }
+      ]
+    }
+  },
+  "img_test_03": {
+    "image_path": "evaluation/golden_set/images/test_split/img_test_03.jpg",
+    "source": "test_split",
+    "original_filename": "ppe_1130_jpg.rf.30578235676beeb7dae698ebdcc6f63c.jpg",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Hardhat"
+      ],
+      "violations": []
+    }
+  },
+  "img_test_04": {
+    "image_path": "evaluation/golden_set/images/test_split/img_test_04.jpg",
+    "source": "test_split",
+    "original_filename": "fglov163_jpg.rf.3f9275d0c624d5c2d9563fdb4f7ba770.jpg",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "NO-Gloves",
+        "Gloves"
+      ],
+      "violations": [
+        {
+          "type": "NO-Gloves",
+          "expected_regulation": "29 CFR 1926.95",
+          "expected_risk_level": "MEDIUM"
+        }
+      ]
+    }
+  },
+  "img_test_05": {
+    "image_path": "evaluation/golden_set/images/test_split/img_test_05.jpg",
+    "source": "test_split",
+    "original_filename": "ppe_0626_jpg.rf.e99306dc35929cbe22f8a2de8222e5c7.jpg",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Hardhat",
+        "Safety Vest"
+      ],
+      "violations": []
+    }
+  },
+  "img_test_06": {
+    "image_path": "evaluation/golden_set/images/test_split/img_test_06.jpg",
+    "source": "test_split",
+    "original_filename": "-4834-_png_jpg.rf.8cde7556c7942a72f1a5db95e19c32ca.jpg",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Hardhat"
+      ],
+      "violations": []
+    }
+  },
+  "img_test_07": {
+    "image_path": "evaluation/golden_set/images/test_split/img_test_07.jpg",
+    "source": "test_split",
+    "original_filename": "image_987_jpg.rf.f707f96c22732d496278dc7f52c225af.jpg",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Hardhat",
+        "Safety Vest"
+      ],
+      "violations": []
+    }
+  },
+  "img_test_08": {
+    "image_path": "evaluation/golden_set/images/test_split/img_test_08.jpg",
+    "source": "test_split",
+    "original_filename": "ppe_0051_jpg.rf.2a9021388e999608feb2413c5c44ce3a.jpg",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Safety Vest"
+      ],
+      "violations": []
+    }
+  },
+  "img_test_09": {
+    "image_path": "evaluation/golden_set/images/test_split/img_test_09.jpg",
+    "source": "test_split",
+    "original_filename": "amz_03786_png_jpg.rf.dc042e7865a06ef32f26c4683b962f48.jpg",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [],
+      "violations": []
+    }
+  },
+  "img_test_10": {
+    "image_path": "evaluation/golden_set/images/test_split/img_test_10.jpg",
+    "source": "test_split",
+    "original_filename": "002374_jpg.rf.b69aa47b30eeda77946b490168294007.jpg",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Hardhat"
+      ],
+      "violations": []
+    }
+  },
+  "construction_site_no_hardhat": {
+    "image_path": "evaluation/golden_set/images/unsplash/construction_site_no_hardhat.jpg",
+    "source": "unsplash",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Person",
+        "NO-Hardhat"
+      ],
+      "violations": [
+        {
+          "type": "NO-Hardhat",
+          "expected_regulation": "29 CFR 1926.100",
+          "expected_risk_level": "HIGH"
+        }
+      ]
+    }
+  },
+  "construction_site_workers": {
+    "image_path": "evaluation/golden_set/images/unsplash/construction_site_workers.jpg",
+    "source": "unsplash",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Person",
+        "Hardhat",
+        "Safety Vest"
+      ],
+      "violations": []
+    }
+  },
+  "construction_worker_hardhat": {
+    "image_path": "evaluation/golden_set/images/unsplash/construction_worker_hardhat.jpg",
+    "source": "unsplash",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Person",
+        "Hardhat"
+      ],
+      "violations": []
+    }
+  },
+  "electrician_working": {
+    "image_path": "evaluation/golden_set/images/unsplash/electrician_working.jpg",
+    "source": "unsplash",
+    "ground_truth": {
+      "context": "general_industry",
+      "visible_classes": [
+        "Person",
+        "NO-Goggles",
+        "Gloves"
+      ],
+      "violations": [
+        {
+          "type": "NO-Goggles",
+          "expected_regulation": "29 CFR 1910.133",
+          "expected_risk_level": "HIGH"
+        }
+      ]
+    }
+  },
+  "factory_worker_safety": {
+    "image_path": "evaluation/golden_set/images/unsplash/factory_worker_safety.jpg",
+    "source": "unsplash",
+    "ground_truth": {
+      "context": "general_industry",
+      "visible_classes": [
+        "Person",
+        "Hardhat"
+      ],
+      "violations": []
+    }
+  },
+  "roadwork_worker": {
+    "image_path": "evaluation/golden_set/images/unsplash/roadwork_worker.jpg",
+    "source": "unsplash",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Person",
+        "Hardhat",
+        "Safety Vest"
+      ],
+      "violations": []
+    }
+  },
+  "scaffolding_worker": {
+    "image_path": "evaluation/golden_set/images/unsplash/scaffolding_worker.jpg",
+    "source": "unsplash",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Person",
+        "Hardhat",
+        "Safety Vest",
+        "Mask"
+      ],
+      "violations": []
+    }
+  },
+  "warehouse_worker_without_vest": {
+    "image_path": "evaluation/golden_set/images/unsplash/warehouse_worker_without_vest.jpg",
+    "source": "unsplash",
+    "ground_truth": {
+      "context": "general_industry",
+      "visible_classes": [
+        "Person",
+        "NO-Hardhat",
+        "NO-Safety Vest"
+      ],
+      "violations": [
+        {
+          "type": "NO-Safety Vest",
+          "expected_regulation": "29 CFR 1910.132",
+          "expected_risk_level": "HIGH"
+        },
+        {
+          "type": "NO-Hardhat",
+          "expected_regulation": "29 CFR 1910.135",
+          "expected_risk_level": "HIGH"
+        }
+      ]
+    }
+  },
+  "welder_protective_equipment": {
+    "image_path": "evaluation/golden_set/images/unsplash/welder_protective_equipment.jpg",
+    "source": "unsplash",
+    "ground_truth": {
+      "context": "general_industry",
+      "visible_classes": [
+        "Person",
+        "Gloves",
+        "Mask"
+      ],
+      "violations": []
+    }
+  },
+  "worker_no_helmet_site": {
+    "image_path": "evaluation/golden_set/images/unsplash/worker_no_helmet_site.jpg",
+    "source": "unsplash",
+    "ground_truth": {
+      "context": "construction",
+      "visible_classes": [
+        "Person",
+        "NO-Hardhat"
+      ],
+      "violations": [
+        {
+          "type": "NO-Hardhat",
+          "expected_regulation": "29 CFR 1926.100",
+          "expected_risk_level": "HIGH"
+        }
+      ]
+    }
+  }
+}

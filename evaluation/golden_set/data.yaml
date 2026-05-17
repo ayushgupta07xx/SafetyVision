@@ -1,0 +1,24 @@
+names:
+- Fall-Detected
+- Gloves
+- Goggles
+- Hardhat
+- Mask
+- NO-Gloves
+- NO-Goggles
+- NO-Hardhat
+- NO-Mask
+- NO-Safety Vest
+- No_Harness
+- Person
+- Safety Vest
+nc: 13
+roboflow:
+  license: CC BY 4.0
+  project: ppe-combined-9bprl-mmcaf
+  url: https://universe.roboflow.com/mazz-maxx/ppe-combined-9bprl-mmcaf/dataset/1
+  version: 1
+  workspace: mazz-maxx
+test: ../test/images
+train: ../train/images
+val: ../valid/images
