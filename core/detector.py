@@ -213,15 +213,17 @@ class PPEDetector:
         return inter / union if union > 0 else 0.0
 
     def _detect_violations(self, dets: list[Detection]) -> list[Violation]:
-        """Pair each NO-X detection with the best-overlapping Person bbox.
+        """Surface every NO-X detection as a violation. Pair with the
+        best-overlapping Person bbox when one exists (IoU >= PERSON_IOU_MIN);
+        otherwise leave person_bbox=None.
 
-        Brief rule: violation requires BOTH a person AND missing PPE. If a
-        NO-X has no nearby person, drop it as a likely false positive.
+        ADR-010: the NO-X training classes are themselves annotated on people
+        without PPE, so the class label is sufficient violation evidence.
+        Strict Person + NO-X pairing was defensive redundancy that introduced
+        false negatives on occluded / partial-pose workers — the worse
+        failure mode for a safety screening tool.
         """
         persons = [d for d in dets if d.cls == PERSON_CLASS]
-        if not persons:
-            return []
-
         violations: list[Violation] = []
         for d in dets:
             if d.cls not in VIOLATION_CLASSES:
@@ -231,14 +233,14 @@ class PPEDetector:
                 iou = self._iou(d.bbox, p.bbox)
                 if iou > best_iou:
                     best_iou, best_person = iou, p
-            if best_iou >= PERSON_IOU_MIN and best_person is not None:
-                violations.append(Violation(
-                    type=d.cls,
-                    risk_level=RISK_LEVELS[d.cls],
-                    confidence=d.confidence,
-                    bbox=d.bbox,
-                    person_bbox=best_person.bbox,
-                ))
+            paired = best_iou >= PERSON_IOU_MIN and best_person is not None
+            violations.append(Violation(
+                type=d.cls,
+                risk_level=RISK_LEVELS[d.cls],
+                confidence=d.confidence,
+                bbox=d.bbox,
+                person_bbox=best_person.bbox if paired else None,
+            ))
         return violations
 
     # ── public API ──────────────────────────────────────────────────────────

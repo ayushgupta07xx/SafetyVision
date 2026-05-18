@@ -403,6 +403,63 @@ paired structure is preserved.
 
 ---
 
+## ADR-010 — Raw NO-X violation surfacing over strict Person + NO-X pairing
+
+**Status:** Accepted (Chat 8, Week 3 deploy prep)
+
+### Context
+
+The original brief specified violation detection as:
+> *"Rule: violation requires BOTH a Person AND missing PPE. Do NOT flag missing PPE if no person detected in frame."*
+
+Implemented literally in `core.detector._detect_violations`: any `NO-Hardhat`, `NO-Mask`, or `NO-Safety Vest` detection that didn't pair with a `Person` bbox (IoU ≥ `PERSON_IOU_MIN = 0.05`) was silently dropped.
+
+Deploy-time testing on three real worksite images:
+
+| Image | Detection outcome | Brief-rule result |
+|---|---|---|
+| Two workers in vests + hardhats | Person ✓, Hardhat ✓, Vest ✓ | Correctly clean |
+| Casual outdoor pose, sledgehammer, no PPE | Both Person and NO-X missed (OOD) | Empty (model miss) |
+| Forklift driver, cab occlusion | NO-Hardhat ✓ (conf 0.43), Person ✗ | **Violation dropped** |
+
+The forklift case is consistent with the documented model failure mode (model card):
+> *"Person detection misses side-view, back-view, partially-occluded workers (training data is heavily frontal)."*
+
+The pairing rule converts every such Person-class miss into a silent false negative — the worst failure mode for a safety screening tool.
+
+### Decision
+
+Surface every `NO-X` detection as a violation regardless of Person pairing. When a Person bbox does pair (IoU ≥ `PERSON_IOU_MIN`), attach it to the violation for richer downstream context (incident report prompts, GradCAM bbox-masking). When no Person pairs, the violation carries `person_bbox=None`.
+
+### Rationale
+
+- The `NO-X` training classes in the source datasets (CHV, PPE-det, Construction Site Safety) are themselves annotated on people without PPE. The class label alone is evidence of "a person without PPE was here" — Person pairing was defensive redundancy.
+- Commercial PPE detectors (Protex AI, Intenseye) surface raw violation-class detections without requiring a separate Person pairing.
+- The Chat-6 golden-set construction already synthesized violations from raw `NO-X` for agent testing — production now matches that pattern, eliminating a train/serve discrepancy that was previously absorbed by the test harness.
+- In a pre-screening tool reviewed by a human safety officer (per *Intended Use* in the model card), false positives from spurious `NO-X` detections are recoverable. False negatives from occluded workers are not.
+
+### Consequences
+
+- More violations surface in occluded / partial-pose scenes — directly addresses the documented Person-detection failure mode.
+- Slight risk of spurious violations on isolated `NO-X` detections (e.g. label-only fragments with no human context). Mitigated by the production confidence threshold of 0.40 (ADR-009) and by risk-level routing in the Gemini-generated incident report.
+- `Violation.person_bbox` is now genuinely optional. Downstream surfaces (`agent.tools.generate_incident_report`, `core.explainer.explain_result`, annotation overlay) already use `violation.bbox` as the primary spatial reference; `person_bbox` is enrichment metadata only.
+- `tests/test_violation.py` updated: `TestPersonAndMissingPPERule` → `TestRawNoXSurfacing`, two previous "dropped silently" assertions inverted, one new test (`test_mixed_paired_and_unpaired_violations_in_same_scene`) added for the real-world mixed case.
+
+### Alternatives considered
+
+- **Keep strict pairing, curate demo images.** Rejected — would force the demo onto a narrow image distribution that misrepresents real worksite conditions. Occlusion is the rule, not the exception.
+- **Lower `PERSON_IOU_MIN` further.** Rejected — doesn't help when the Person class isn't detected at all, which is the actual failure mode.
+- **Confidence-weighted surfacing (paired → full violation, unpaired → low-risk advisory).** Considered. Out of scope for Week 3; current risk-level mapping per class is sufficient signal. Revisit if production false-positive rate proves high.
+
+### Impact on existing artifacts
+
+- **Brief deviation:** explicit and documented here. The brief's stricter rule is preserved in the Git history of `core/detector.py` and in `tests/test_violation.py` prior to this commit.
+- **Model card:** failure modes section should be updated to note that occluded-worker violations now surface (with `person_bbox=None`) rather than dropping silently.
+- **A/B test results (ADR-009):** unaffected — threshold sweep was run on per-image classification correctness, not on the pairing rule.
+- **Forecasting:** unaffected — historical violation records remain the unit of analysis.
+
+---
+
 *Future ADRs (placeholders):*
 - ADR-006 — Lambda Function URLs over AWS API Gateway (Week 3)
 - ADR-007 — Gradio vs FastAPI for HF Spaces (Week 3)

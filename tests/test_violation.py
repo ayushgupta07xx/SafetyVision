@@ -1,6 +1,8 @@
-"""Tests for the violation-pairing rule.
+"""Tests for the violation surfacing rule.
 
-Brief (Layer 1): "Violation requires BOTH a person AND missing PPE."
+ADR-010: every NO-X detection surfaces as a violation. When a Person bbox
+pairs (IoU >= PERSON_IOU_MIN), it is attached to the violation for richer
+downstream reporting; otherwise person_bbox is None.
 
 Logic lives in core.detector.PPEDetector._detect_violations. We exercise it
 directly via an uninitialized PPEDetector instance (no ONNX session needed).
@@ -21,10 +23,14 @@ def _det(cls: str, bbox=(0.0, 0.0, 100.0, 100.0), conf=0.9) -> Detection:
     return Detection(cls=cls, confidence=conf, bbox=bbox)
 
 
-# ─── Brief rule: violation requires BOTH a Person AND a NO-X ────────────────
-class TestPersonAndMissingPPERule:
-    def test_no_x_without_person_drops_silently(self, detector_instance):
-        assert detector_instance._detect_violations([_det("NO-Hardhat")]) == []
+# ─── Raw NO-X surfacing (ADR-010) ───────────────────────────────────────────
+class TestRawNoXSurfacing:
+    def test_no_x_without_person_surfaces_unpaired(self, detector_instance):
+        """ADR-010: NO-X alone (e.g. occluded forklift driver) is a violation."""
+        violations = detector_instance._detect_violations([_det("NO-Hardhat")])
+        assert len(violations) == 1
+        assert violations[0].type == "NO-Hardhat"
+        assert violations[0].person_bbox is None
 
     def test_person_alone_no_violation(self, detector_instance):
         assert detector_instance._detect_violations([_det("Person")]) == []
@@ -33,7 +39,7 @@ class TestPersonAndMissingPPERule:
         dets = [_det("Person"), _det("Hardhat")]
         assert detector_instance._detect_violations(dets) == []
 
-    def test_person_plus_overlapping_no_x_yields_violation(self, detector_instance):
+    def test_person_plus_overlapping_no_x_yields_paired_violation(self, detector_instance):
         dets = [
             _det("Person", bbox=(0, 0, 100, 200)),
             _det("NO-Hardhat", bbox=(10, 0, 90, 40)),
@@ -44,23 +50,28 @@ class TestPersonAndMissingPPERule:
         assert violations[0].person_bbox == (0, 0, 100, 200)
 
 
-# ─── IoU threshold ──────────────────────────────────────────────────────────
-class TestIoUThreshold:
-    def test_clear_overlap_kept(self, detector_instance):
-        # NO-Hardhat fully inside Person → IoU well above PERSON_IOU_MIN (0.05)
+# ─── IoU-based Person pairing (when Person bbox attaches) ───────────────────
+class TestIoUPairing:
+    def test_clear_overlap_attaches_person(self, detector_instance):
         dets = [
             _det("Person", bbox=(0, 0, 100, 100)),
             _det("NO-Hardhat", bbox=(0, 0, 50, 50)),
         ]
-        assert len(detector_instance._detect_violations(dets)) == 1
+        violations = detector_instance._detect_violations(dets)
+        assert len(violations) == 1
+        assert violations[0].person_bbox == (0, 0, 100, 100)
 
-    def test_tiny_overlap_dropped(self, detector_instance):
-        # 2×2 intersection / ~20000 union ≈ 0.0001 — well below 0.05 threshold
+    def test_tiny_overlap_surfaces_violation_without_person(self, detector_instance):
+        """Person present but pairing IoU below threshold → violation surfaces
+        anyway with person_bbox=None (ADR-010)."""
         dets = [
             _det("Person", bbox=(0, 0, 100, 100)),
             _det("NO-Hardhat", bbox=(98, 98, 198, 198)),
         ]
-        assert detector_instance._detect_violations(dets) == []
+        violations = detector_instance._detect_violations(dets)
+        assert len(violations) == 1
+        assert violations[0].type == "NO-Hardhat"
+        assert violations[0].person_bbox is None
 
 
 # ─── Risk level mapping ─────────────────────────────────────────────────────
@@ -94,6 +105,7 @@ class TestComplexScenes:
         ]
         violations = detector_instance._detect_violations(dets)
         assert len(violations) == 2
+        assert all(v.person_bbox is not None for v in violations)
 
     def test_one_person_two_missing_ppe(self, detector_instance):
         dets = [
@@ -106,15 +118,28 @@ class TestComplexScenes:
         assert types == {"NO-Hardhat", "NO-Safety Vest"}
 
     def test_no_x_pairs_with_best_overlapping_person(self, detector_instance):
-        # NO-Hardhat clearly overlaps Person A (huge IoU) vs Person B (zero)
         dets = [
-            _det("Person", bbox=(0, 0, 100, 200)),         # A
-            _det("Person", bbox=(300, 0, 400, 200)),       # B
+            _det("Person", bbox=(0, 0, 100, 200)),
+            _det("Person", bbox=(300, 0, 400, 200)),
             _det("NO-Hardhat", bbox=(20, 10, 90, 50)),
         ]
         violations = detector_instance._detect_violations(dets)
         assert len(violations) == 1
-        assert violations[0].person_bbox == (0, 0, 100, 200)  # A wins
+        assert violations[0].person_bbox == (0, 0, 100, 200)
+
+    def test_mixed_paired_and_unpaired_violations_in_same_scene(self, detector_instance):
+        """Real-world scene: one visible worker, one occluded worker."""
+        dets = [
+            _det("Person", bbox=(0, 0, 100, 200)),
+            _det("NO-Hardhat", bbox=(10, 0, 90, 40)),
+            _det("NO-Hardhat", bbox=(500, 100, 580, 160)),
+        ]
+        violations = detector_instance._detect_violations(dets)
+        assert len(violations) == 2
+        paired = [v for v in violations if v.person_bbox is not None]
+        unpaired = [v for v in violations if v.person_bbox is None]
+        assert len(paired) == 1
+        assert len(unpaired) == 1
 
 
 # ─── Violation dataclass ────────────────────────────────────────────────────

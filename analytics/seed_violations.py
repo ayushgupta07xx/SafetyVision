@@ -32,13 +32,24 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(message)s")
 
 DB_PATH = Path(os.getenv("SAFETYVISION_DB", "/tmp/violations.db"))
 
-# Per-type base rates (violations per inspection on a normal weekday)
-# Class names match what the YOLOv8 model outputs (chat 5 smoke-tested).
+# Per-type base rates (violations per inspection on a normal weekday).
+# Widened spread (chat 8 polish) so forecast curves are visually distinct in
+# the demo instead of all hovering 90-97%. Class names match YOLOv8 outputs.
 BASE_RATES = {
-    "NO-Hardhat":     0.10,
-    "NO-Safety Vest": 0.08,
-    "NO-Mask":        0.05,
-    "No_Harness":     0.03,
+    "NO-Hardhat":     0.10,   # ~90% mean compliance
+    "NO-Safety Vest": 0.25,   # ~75% mean compliance — worst offender
+    "NO-Mask":        0.03,   # ~97% mean compliance — best
+    "No_Harness":     0.15,   # ~85% mean compliance
+}
+
+# Per-type linear trend over the seeded window (start_multiplier, end_multiplier).
+# Distinct trajectories give the forecast tab visually different shapes:
+# improvement, deterioration, gentle drift, stable.
+TREND_START_END = {
+    "NO-Hardhat":     (1.20, 0.80),  # strong improvement (violations falling)
+    "NO-Safety Vest": (0.90, 1.10),  # gentle deterioration
+    "NO-Mask":        (1.10, 0.90),  # gentle improvement
+    "No_Harness":     (1.00, 1.00),  # stable
 }
 
 RISK_LEVELS = {
@@ -122,10 +133,10 @@ def seed(days: int = 30, rng_seed: int = 42) -> dict:
             )
             total_i += inspections
 
-            # Trend: gentle improvement over the window (1.1x -> 0.9x)
-            trend = 1.1 - 0.2 * (day_idx / max(1, days - 1))
-
             for vtype, rate in BASE_RATES.items():
+                # Per-type trajectory (chat 8 polish) — see TREND_START_END
+                start, end = TREND_START_END[vtype]
+                trend = start + (end - start) * (day_idx / max(1, days - 1))
                 effective = rate * DOW_FACTOR[dow] * trend * random.uniform(0.7, 1.3)
                 count = max(0, int(round(inspections * effective)))
 

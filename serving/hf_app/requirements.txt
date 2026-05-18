@@ -1,0 +1,36 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# UI
+gradio>=5.0,<6
+
+# Vision + ONNX runtime
+onnxruntime>=1.16
+opencv-python-headless>=4.8
+numpy>=1.24,<2
+pillow>=10.0
+
+# Explainability (CPU torch wheel pulled from extra-index above)
+torch>=2.1
+torchvision>=0.16
+grad-cam>=1.5
+shap>=0.44
+
+# LLM + RAG
+google-generativeai>=0.7
+qdrant-client>=1.7
+sentence-transformers>=2.5
+
+# Agent
+langgraph>=0.2,<1
+langchain-core>=0.2
+
+# Forecasting
+prophet>=1.1.5
+plotly>=5.18
+pandas>=2.0
+
+# Model weights download
+huggingface-hub>=0.20
+
+# Misc
+python-dotenv>=1.0
