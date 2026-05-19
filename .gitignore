@@ -67,3 +67,7 @@ infra/aws/terraform.tfvars
 /annotations.png
 /gradcam.png
 /shap.png
+
+# v2 dataset (kept on VM disk, never in git)
+data/
+

@@ -40,9 +40,10 @@ DATA_ROOT.mkdir(parents=True, exist_ok=True)
 # (workspace, project, version, local_subdir, expected_class_count)
 SOURCES = [
     ("mazz-maxx", "ppe-combined-9bprl-mmcaf", 1, "v1_ppe_combined", 13),
-    ("ppe-kit-detection", "hardhat-safetyvest", 2, "hardhat_safetyvest", 3),
+    ("ppe-kit-detection", "hardhat-safetyvest", 1, "hardhat_safetyvest", 3),
     ("roboflow-universe-projects", "fall-detection-ca3o8", 4, "fall_detection", 1),
-    ("safety-jmser", "safety_ppe", 2, "safety_ppe_multi", 12),
+    ("safety-jmser", "safety_ppe", 1, "safety_ppe_multi", 12),
+    ("construction-ppe-dataset", "construction-safety-gears-vcbdq", 1, "construction_safety_gears", 11),
 ]
 
 

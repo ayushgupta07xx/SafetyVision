@@ -78,6 +78,20 @@ REMAP: dict[str, object] = {
         "No_Shoe": None,
         "No_BreathingApparatus": None,
     },
+
+    "construction_safety_gears": {
+        "Gloves": "Gloves",
+        "Hardhat": "Hardhat",
+        "Mask": "Mask",
+        "Person": "Person",
+        "Safety Vest": "Safety Vest",
+        "NO-Gloves": "NO-Gloves",
+        "NO-Hardhat": "NO-Hardhat",
+        "NO-Mask": "NO-Mask",
+        "NO-Safety Vest": "NO-Safety Vest",
+        "Safety Boot": None,
+        "NO-Safety Boot": None,
+    },
 }
 
 PHASH_THRESHOLD = 5  # Hamming distance bits; lower = stricter dedup
@@ -184,29 +198,24 @@ def hash_image(path: Path) -> Optional[imagehash.ImageHash]:
 
 
 def dedup(records: list[tuple[Path, list[str], str]]) -> list[tuple[Path, list[str], str]]:
-    """Bucket-based pHash dedup. Buckets on first 8 hex chars, exact compare within bucket."""
-    log.info(f"Hashing {len(records)} images...")
-    hashed = []
-    for img, labels, src in tqdm(records, desc="hash"):
-        h = hash_image(img)
-        if h is not None:
-            hashed.append((h, img, labels, src))
-
-    log.info("Bucketing + dedup pass...")
-    buckets: dict[str, list] = defaultdict(list)
-    for h, img, labels, src in hashed:
-        buckets[str(h)[:8]].append((h, img, labels, src))
-
+    """MD5 exact-duplicate dedup. Fast (O(N)), catches byte-identical images across datasets.
+    Replaces an earlier broken pHash implementation that was effectively O(N^2)."""
+    import hashlib
+    log.info(f"Computing MD5 hashes for {len(records)} images...")
+    seen: set[str] = set()
     kept: list[tuple[Path, list[str], str]] = []
-    seen: list = []
-    for items in buckets.values():
-        for h, img, labels, src in items:
-            is_dup = any((h - prev) <= PHASH_THRESHOLD for prev in seen)
-            if not is_dup:
-                kept.append((img, labels, src))
-                seen.append(h)
-
-    log.info(f"Kept {len(kept)} / {len(records)} ({len(records) - len(kept)} dropped as duplicates)")
+    for img, labels, src in tqdm(records, desc="md5"):
+        try:
+            with open(img, "rb") as f:
+                md5 = hashlib.md5(f.read()).hexdigest()
+        except Exception as e:
+            log.warning(f"md5 fail on {img.name}: {e}")
+            continue
+        if md5 in seen:
+            continue
+        seen.add(md5)
+        kept.append((img, labels, src))
+    log.info(f"Kept {len(kept)} / {len(records)} ({len(records) - len(kept)} dropped as exact duplicates)")
     return kept
 
 
