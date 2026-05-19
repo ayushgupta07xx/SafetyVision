@@ -71,3 +71,8 @@ infra/aws/terraform.tfvars
 # v2 dataset (kept on VM disk, never in git)
 data/
 
+
+# v2 training outputs (chat 10)
+runs/
+logs/
+yolov8s.pt
