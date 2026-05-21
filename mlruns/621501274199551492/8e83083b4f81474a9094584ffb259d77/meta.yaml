@@ -1,0 +1,14 @@
+artifact_uri: file:///home/ayushgupta15062003/safetyvision/mlruns/621501274199551492/8e83083b4f81474a9094584ffb259d77/artifacts
+end_time: 1779172283800
+entry_point_name: ''
+experiment_id: '621501274199551492'
+lifecycle_stage: active
+run_id: 8e83083b4f81474a9094584ffb259d77
+run_name: yolov8s-ppe-v2-dryrun
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1779171999835
+status: 3
+tags: []
+user_id: ayushgupta15062003

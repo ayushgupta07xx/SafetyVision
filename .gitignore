@@ -75,4 +75,5 @@ data/
 # v2 training outputs (chat 10)
 runs/
 logs/
-yolov8s.pt
+yolo*.pt
+mlruns/**/artifacts/weights/
