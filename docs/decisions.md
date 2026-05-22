@@ -460,6 +460,95 @@ Surface every `NO-X` detection as a violation regardless of Person pairing. When
 
 ---
 
+## ADR-011 — GCP L4 for v2 training; global GPU quota was the real blocker (corrects ADR-001 framing)
+
+**Status:** Accepted
+**Date:** 2026-05-20
+**Decision owner:** Ayush
+**Supersedes:** ADR-001 (partially — the "GCP permanently unusable" conclusion)
+
+### Context
+ADR-001 concluded GCP GPUs were unprovisionable on this account and pivoted v1 to Kaggle. That was a correct *v1 unblock*, but the diagnosis was incomplete. v2 needed a single uninterrupted ~62-hour run — infeasible under Kaggle's 12-hour session cap without repeating the ADR-003 checkpoint-carrier dance. That forced a second look at GCP.
+
+### Root cause (corrected)
+GCP GPU quota is two-layered:
+- **Regional** `NVIDIA_*_GPUS` — what the IAM dashboard shows per region.
+- **Global** `GPUS_ALL_REGIONS` — an umbrella cap that overrides regional values.
+
+New paid accounts default `GPUS_ALL_REGIONS = 0`. With the global cap at 0, every GPU request in every region fails **even when the regional quota shows limit=1**. ADR-001 read the regional dashboard (T4: limit=1, usage=0) and mis-attributed the failures to an "N1/G2 machine-family throttle." The actual blocker was the global umbrella sitting at 0.
+
+### Resolution
+On an account aged 7+ days, a single quota-increase request for `GPUS_ALL_REGIONS = 1` (with a one-line honest justification) was approved within hours. With global=1, L4 provisioned immediately in `asia-southeast1-c`.
+
+### Decision
+Train v2 on a GCP **L4** (`g2-standard-8`: 8 vCPU, 32GB RAM, 1× L4 24GB), 100GB pd-balanced, image `common-cu129-ubuntu-2204-nvidia-580`, ~₹70/hr on-demand. Single continuous 61.25-hour run, no session cap, no resume needed.
+
+### Reasoning
+1. One uninterrupted run removes the Kaggle checkpoint-carrier dance (ADR-003) and the W&B resume gap (ADR-004) entirely.
+2. L4 24GB fits batch=24 at imgsz=896 (ADR-012); Kaggle's 2×T4 (16GB each) could not at that batch.
+3. ssh access enables tmux-managed background training + live log tailing — impossible in Kaggle notebooks.
+4. Cost stayed inside the GCP free-trial credit (~₹4,500 of ~₹22-23k for the full run); $0 out of pocket.
+
+### Caveat (honest)
+This does not make ADR-001 wrong for v1 — Kaggle was the correct zero-setup choice at the time given the (incomplete) diagnosis and v1's shorter run. ADR-001 stands as the v1 record; this ADR corrects the "permanent wall" framing. Lesson: when GCP GPU requests fail with healthy *regional* quota, check `GPUS_ALL_REGIONS` before concluding the account is throttled.
+
+### Consequences
+- v2 training infra is GCP L4; Kaggle is out of the loop.
+- VM is **stopped, not deleted**, between sessions (~₹3-4/day disk) so dataset, test split, and checkpoints persist. Delete only after all artifacts are on HF Hub / committed.
+- gcloud runs from local WSL only (scope errors inside the VM), always with `--project=safetyvision-training`.
+
+### Files touched
+- `scripts/launch_training.sh`
+- handoff notes (GCP quota architecture, VM lifecycle)
+
+---
+
+## ADR-012 — v2 final config: batch=24 + imgsz=896 + multi_scale=False; augmentation over class-weighting
+
+**Status:** Accepted
+**Date:** 2026-05-20
+**Decision owner:** Ayush
+**Supersedes:** — (revises the Chat-9 locked config)
+
+### Context
+The Chat-9 locked v2 config was batch=24 + imgsz=896 + **multi_scale=True**, plus a planned class-weighted loss to counter the NO-Mask imbalance (~51:1 vs Hardhat). A 5-minute 1%-data dry-run on the L4 validated the pipeline before committing ~62 GPU-hours.
+
+### Evidence
+`multi_scale=True` randomizes input size per batch across 0.5–1.5× of imgsz — for imgsz=896 that peaks at ~1344–1792px. At those peak sizes batch=24 **OOMs** on the L4's 24GB. Ultralytics auto-retries by halving to batch=12 (fits at ~21.5G peak) but that pushes wall time to ~95 hours. With `multi_scale=False`, batch=24 peaks at ~9.98G and runs in ~62 hours.
+
+| Config | Peak VRAM | Est. wall time | Fits 24GB |
+|---|---|---|---|
+| batch=24, multi_scale=True | OOM at peak | — | no |
+| batch=12, multi_scale=True | ~21.5G | ~95 hr | yes |
+| **batch=24, multi_scale=False** | **~9.98G** | **~62 hr** | yes |
+
+### Decision
+Set `multi_scale=False`, keep batch=24 + imgsz=896. Take the augmentation-only robustness path (Albumentations: CoarseDropout, MotionBlur, RandomGamma, CLAHE + native perspective) instead of the planned class-weighted loss.
+
+### Reasoning
+1. **multi_scale benefit is marginal here.** SafetyVision serves at fixed resolution (640 on Lambda, 896 on Spaces), not arbitrary scales — scale-jitter robustness buys little, and 62hr << 95hr.
+2. **Augmentation alone hit target.** Final val mAP@50 = 0.787 (≥ 0.78). The feared NO-Mask collapse did not happen (recall 0.789); class-weighting would have added a tuning axis for no proven gain.
+3. The dry-run caught the trade-off in *minutes*, not mid-run *hours*.
+
+### Results (honest)
+- val (8,025 imgs): mAP@50 **0.787**, mAP@50-95 0.504
+- test (4,026 held-out): mAP@50 **0.766** @896 / **0.754** @640 (.pt); **0.738** @640 (deployed ONNX, fp32 drift)
+- vs v1 test (0.701 / 0.441): +6.5 / +4.6 mAP at 896, +5.3 at 640
+- **Weakest class is NO-Safety Vest (test mAP@50 0.386–0.402, ~217 instances)**, not the predicted NO-Mask. Mask (0.55–0.58) is also weak — the construction_safety_gears set mixes COVID face-mask close-ups into the industrial-mask class. Both documented, not cherry-picked.
+
+### Caveat (honest)
+The 0.78 target was specified on held-out **test**; test came in at **0.766** (@896) — short by 0.014. Val cleared it (0.787). The model card reports test as the headline generalization number and notes the shortfall rather than leading with val. multi_scale=False only matters if a v3 retrain is attempted at a resolution that benefits from scale jitter.
+
+### Alternatives considered
+- **batch=12 + multi_scale=True (~95hr):** rejected — ~33 extra GPU-hours (~₹2,300) for scale robustness a fixed-resolution deployment doesn't use.
+- **Class-weighted loss for NO-Mask:** parked — augmentation-only hit target; revisit only if a future class collapses below usable recall.
+
+### Files touched
+- `model/train_v2.py` (multi_scale=False, Albumentations monkey-patch)
+- `scripts/launch_training.sh`
+
+---
+
 *Future ADRs (placeholders):*
 - ADR-006 — Lambda Function URLs over AWS API Gateway (Week 3)
 - ADR-007 — Gradio vs FastAPI for HF Spaces (Week 3)
