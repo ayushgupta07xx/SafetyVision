@@ -77,3 +77,4 @@ runs/
 logs/
 yolo*.pt
 mlruns/**/artifacts/weights/
+artifacts/onnx/
