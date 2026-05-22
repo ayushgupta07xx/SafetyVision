@@ -1,13 +1,16 @@
-"""YOLOv8 ONNX inference + PPE violation detection.
+"""YOLOv8s (v2) ONNX inference + PPE violation detection.
 
-Loads ONNX weights from HuggingFace Hub on first init (cached under
-~/.cache/huggingface/hub/), runs CPU inference via onnxruntime, applies NMS,
-and pairs detected PPE-absence classes (NO-Hardhat, NO-Safety Vest, NO-Mask)
-with the nearest Person bbox to produce violations.
+Loads v2 ONNX weights (best_640.onnx, 13-class) from HuggingFace Hub on first
+init (cached under ~/.cache/huggingface/hub/), or from an explicit local path
+(used by the Lambda container, which bakes the weights into the image). Runs
+CPU inference via onnxruntime, applies NMS, and surfaces every PPE-absence
+("NO-X") detection as a violation, pairing each with the best-overlapping
+Person bbox when one exists.
 
 Brief reference:
     Layer 1 — Computer Vision (core)
-    Violation rule: requires BOTH a person AND missing PPE in the same region.
+    Violation rule: ADR-010 — surface every NO-X detection; attach the
+    nearest Person bbox (IoU >= PERSON_IOU_MIN) when present, else None.
 """
 
 from __future__ import annotations
@@ -27,19 +30,26 @@ logger = logging.getLogger(__name__)
 
 # ─── Constants ──────────────────────────────────────────────────────────────
 HF_REPO = "ayushgupta7777/safetyvision-yolov8"
-ONNX_FILENAME = "best.onnx"
-ONNX_DATA_FILENAME = "best.onnx.data"  # external weight data; must ride along
+ONNX_FILENAME = "v2/best_640.onnx"  # v2 small, 13-class, 640 static shape, no sidecar
 
-IMG_SIZE = 640
+IMG_SIZE = 640  # MUST equal the exported ONNX static shape — re-export if changed
 DEFAULT_CONF_THRESHOLD = 0.40
 DEFAULT_IOU_THRESHOLD = 0.45
-PERSON_IOU_MIN = 0.05  # min IoU between NO-X and Person to count as violation
+PERSON_IOU_MIN = 0.05  # min IoU between NO-X and Person to attach person_bbox
 
-# Risk levels per violation class (from brief Layer 4 spec)
+# Risk tiers per violation class. Keys MUST byte-match the ONNX metadata names
+# (case, hyphen vs underscore, spacing). Brief Layer 1 designates NO-Hardhat /
+# NO-Safety Vest = HIGH, NO-Mask = MEDIUM, NO-Gloves = context-dependent,
+# No_Harness = CRITICAL. NO-Goggles and Fall-Detected are v2-only (absent from
+# the original brief) — tiers below are a sensible default; override if needed.
 RISK_LEVELS: dict[str, str] = {
+    "Fall-Detected": "CRITICAL",   # v2-only: detected fall event (not a NO-X)
+    "No_Harness": "CRITICAL",      # fall protection at height
     "NO-Hardhat": "HIGH",
     "NO-Safety Vest": "HIGH",
+    "NO-Goggles": "MEDIUM",        # v2-only: eye protection
     "NO-Mask": "MEDIUM",
+    "NO-Gloves": "LOW",            # context-dependent (brief)
 }
 VIOLATION_CLASSES = set(RISK_LEVELS.keys())
 PERSON_CLASS = "Person"
@@ -72,7 +82,8 @@ class DetectionResult:
 
 # ─── Detector ───────────────────────────────────────────────────────────────
 class PPEDetector:
-    """YOLOv8 ONNX detector. First instance downloads weights from HF Hub."""
+    """YOLOv8 ONNX detector. First instance downloads weights from HF Hub
+    (unless onnx_path is supplied, e.g. by the Lambda container)."""
 
     _instance: PPEDetector | None = None
 
@@ -81,18 +92,18 @@ class PPEDetector:
         conf_threshold: float = DEFAULT_CONF_THRESHOLD,
         iou_threshold: float = DEFAULT_IOU_THRESHOLD,
         hf_repo: str = HF_REPO,
+        onnx_path: str | Path | None = None,
     ) -> None:
         self.conf_threshold = conf_threshold
         self.iou_threshold = iou_threshold
 
-        # Pull both .onnx and its external-data file (must be in the same dir)
-        onnx_path = hf_hub_download(repo_id=hf_repo, filename=ONNX_FILENAME)
-        try:
-            hf_hub_download(repo_id=hf_repo, filename=ONNX_DATA_FILENAME)
-        except Exception:
-            logger.warning(
-                "No %s found in %s — assuming weights are inline", ONNX_DATA_FILENAME, hf_repo
-            )
+        # Lambda bakes the .onnx into the container image and passes onnx_path
+        # to skip the HF download. Local dev / HF Spaces leave it None → pull
+        # from the Hub (cached after first run). v2 has no external-data sidecar.
+        if onnx_path is not None:
+            onnx_path = str(onnx_path)
+        else:
+            onnx_path = hf_hub_download(repo_id=hf_repo, filename=ONNX_FILENAME)
 
         logger.info("Loading ONNX model from %s", onnx_path)
         self.session = ort.InferenceSession(
