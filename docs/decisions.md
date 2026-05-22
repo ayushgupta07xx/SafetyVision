@@ -549,6 +549,53 @@ The 0.78 target was specified on held-out **test**; test came in at **0.766** (@
 
 ---
 
+## ADR-013 — Deployment resolution: 640 ONNX on Lambda, 896 ONNX on HF Spaces (dual export, one model)
+
+**Status:** Accepted
+**Date:** 2026-05-22
+**Decision owner:** Ayush
+**Supersedes:** —
+
+### Context
+v2 trained at imgsz=896 (ADR-012), but `core/detector.py` preprocesses (letterboxes) to `IMG_SIZE = 640`, carried over from v1. A static-shape ONNX bakes its input size into the graph, so the export imgsz and the detector's resize **must match**. That forced a deployment-resolution decision: run the model at 640 or 896, and on which surface.
+
+### Evidence (held-out test, 4,026 images)
+| Measurement | mAP@0.5 | mAP@0.5:0.95 |
+|---|---|---|
+| `.pt` @ 896 | 0.766 | 0.487 |
+| `.pt` @ 640 | 0.754 | 0.485 |
+| ONNX @ 640 (onnxslim, opset 20) | 0.738 | 0.463 |
+
+Dropping from 896 to 640 costs only **−0.012 mAP@0.5** on the `.pt`, and 640 still beats v1's 0.701 by +5.3. The ONNX adds a further ~0.016 fp32 drift at 640 (precision unchanged, slight recall dip at threshold — benign).
+
+### Decision
+Export **both** resolutions from the single `best.pt` and deploy per surface:
+- **AWS Lambda → `best_640.onnx`** (imgsz 640). Matches `detector.py` (no code change) and stays inside the CPU / 2 GB-memory budget that motivated choosing YOLOv8s in the first place.
+- **HF Spaces → `best_896.onnx`** (imgsz 896). 16 GB RAM and no payload limit → run the full 0.766 ceiling at no cost.
+
+`detector.py` stays at `IMG_SIZE = 640` (verified, unchanged). Both files pushed to HF Hub `v2/`.
+
+### Reasoning
+1. **Training at 896 isn't wasted by inferring at 640.** Training resolution and inference resolution are decoupled — the 0.754-at-640 figure is the 896-training gains carried at lower inference cost, and a 640-*trained* model would likely score lower at 640.
+2. **Lambda is the constrained surface.** 896 is ~1.96× the pixels of 640 → ~2× CPU compute and activation RAM. Deploying 896 there would re-open the exact budget question that drove the small-over-medium model choice, for +0.012 mAP. Not worth it.
+3. **Spaces can afford the ceiling**, so it gets it.
+4. **One model, two export configs — not two models.** Preserves the "single model variant across surfaces" intent (model size/architecture is identical); only the export resolution differs.
+
+### Honest numbers
+The deployed Lambda figure is the **ONNX @ 640 = 0.738**, not the `.pt` 0.754 — the model card reports it as such. The 896 ONNX wasn't separately re-evaluated; `.pt` @ 896 = 0.766 is the Spaces ceiling and the ONNX carries a comparable small drift.
+
+### Alternatives considered
+- **Single 640 export only (simplest):** rejected — strands the measured 896 ceiling on a surface (Spaces) that can run it, to save one export file.
+- **896 on Lambda:** rejected — re-opens the Lambda CPU/memory budget for +0.012 mAP.
+- **Dynamic-axis ONNX (one file, variable input):** rejected — letterbox still pads to a fixed size per surface; dynamic axes add runtime overhead with no benefit for two fixed targets.
+
+### Files touched
+- HF Hub `v2/best_640.onnx`, `v2/best_896.onnx` (exported from `best.pt`; local copies under gitignored `artifacts/onnx/`)
+- `core/detector.py` (unchanged — `IMG_SIZE = 640` confirmed)
+- `docs/model_card.md` (deployed-resolution numbers)
+
+---
+
 *Future ADRs (placeholders):*
 - ADR-006 — Lambda Function URLs over AWS API Gateway (Week 3)
 - ADR-007 — Gradio vs FastAPI for HF Spaces (Week 3)
