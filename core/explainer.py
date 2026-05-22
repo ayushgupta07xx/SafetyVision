@@ -41,7 +41,7 @@ from core.detector import HF_REPO, DetectionResult, draw_annotations
 
 logger = logging.getLogger(__name__)
 
-PT_FILENAME = "best.pt"
+PT_FILENAME = "v2/best.pt"
 EXPLAINER_IMG_SIZE = 320  # smaller than detector's 640 for latency
 SHAP_NSAMPLES = 20  # default 200; 20 gives acceptable attribution at ~10× speedup
 
