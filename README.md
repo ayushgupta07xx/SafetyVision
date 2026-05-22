@@ -4,7 +4,7 @@
 
 Hard-hat-free zones, missing high-vis vests, exposed hands — safety violations that human eyes miss when scanning hundreds of cameras. SafetyVision is an open-source pre-screening tool that surfaces these for human review, replacing $500–$2,000/month enterprise tools like Protex AI and Intenseye.
 
-[Model on Hugging Face](https://huggingface.co/ayushgupta7777/safetyvision-yolov8) · [Training run on W&B](https://wandb.ai/agcr7jw-vellore-institute-of-technology/safetyvision/runs/9nctv2ai) · [Model card](docs/model_card.md) · [Architecture decisions](docs/decisions.md)
+[Model on Hugging Face](https://huggingface.co/ayushgupta7777/safetyvision-yolov8) · [Training run on W&B](https://wandb.ai/agcr7jw-vellore-institute-of-technology/Ultralytics/runs/yolov8s-ppe-v2_20260519_065053) · [Model card](docs/model_card.md) · [Architecture decisions](docs/decisions.md)
 
 ---
 
@@ -129,7 +129,7 @@ Full architecture diagram (Mermaid): [docs/architecture.md](docs/architecture.md
 - **Dataset:** [PPE-Combined v1](https://universe.roboflow.com/mazz-maxx/ppe-combined-9bprl-mmcaf) on Roboflow Universe — 57,904 images, 13 classes
 - **Schedule:** 100 epochs · batch=32 · imgsz=640 · SGD with default ultralytics LR schedule
 - **Wall time:** ~15 hours across two Kaggle Save Versions (12-hour session cap forced a mid-run resume at epoch 82 — see [ADR-003](docs/decisions.md))
-- **W&B run (public):** [`9nctv2ai`](https://wandb.ai/agcr7jw-vellore-institute-of-technology/safetyvision/runs/9nctv2ai) — epochs 1–82 in W&B charts; epochs 83–100 metrics in [`model/yolov8n-ppe-v1/results.csv`](model/yolov8n-ppe-v1/results.csv) (see [ADR-004](docs/decisions.md))
+- **W&B run (public):** original v1 run `9nctv2ai` (expired); current run [`yolov8s-ppe-v2`](https://wandb.ai/agcr7jw-vellore-institute-of-technology/Ultralytics/runs/yolov8s-ppe-v2_20260519_065053) — epochs 1–82 in W&B charts; epochs 83–100 metrics in [`model/yolov8n-ppe-v1/results.csv`](model/yolov8n-ppe-v1/results.csv) (see [ADR-004](docs/decisions.md))
 - **MLflow registry:** committed at [`mlruns/`](mlruns/), run ID `f1932e539038417dad6db757affd50e6`
 
 Why Kaggle and not GCP? See [ADR-001](docs/decisions.md) — diagnosed an undocumented GCP N1/G2 family throttle on new paid accounts via systematic VM-class testing across 30+ zones.
