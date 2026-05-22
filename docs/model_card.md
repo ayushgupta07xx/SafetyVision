@@ -6,34 +6,60 @@ library_name: ultralytics
 pipeline_tag: object-detection
 tags:
 - yolov8
+- yolov8s
 - object-detection
 - ppe-detection
 - workplace-safety
 - computer-vision
 - onnx
+- albumentations
 - safety
 - osha
 ---
 
-# SafetyVision YOLOv8n — PPE Detection
+# SafetyVision YOLOv8 — PPE Detection (v1 nano · v2 small)
 
-YOLOv8n fine-tuned for Personal Protective Equipment (PPE) detection at industrial worksites. Backbone model for [SafetyVision](https://github.com/ayushgupta07xx/SafetyVision), an open-source AI workplace safety monitor.
+YOLOv8 fine-tuned for Personal Protective Equipment (PPE) detection at industrial worksites. Backbone model for [SafetyVision](https://github.com/ayushgupta07xx/SafetyVision), an open-source AI workplace safety monitor.
 
-| Headline metric | Value |
+This repo hosts **two versions**:
+- **v2 (current, production)** — YOLOv8s, trained on 80k images with Albumentations augmentation. Weights at `v2/`.
+- **v1 (original)** — YOLOv8n, trained on 58k images. Weights at the repo root, kept for reproducibility and the v1→v2 comparison.
+
+| Headline metric (v2, held-out test) | Value |
 |---|---|
-| **Test mAP@0.5** | **0.701** |
-| **Test mAP@0.5:0.95** | **0.441** |
-| Parameters | 3,008,183 (~3M) |
-| FLOPs | 8.1 GFLOPs |
-| Input | 640×640 RGB |
-| Inference (T4 GPU) | 2.9 ms |
+| **Test mAP@0.5 (imgsz 896)** | **0.766** |
+| Test mAP@0.5 (imgsz 640) | 0.754 |
+| Deployed ONNX mAP@0.5 (imgsz 640) | 0.738 |
+| Test mAP@0.5:0.95 (imgsz 896) | 0.487 |
+| Validation mAP@0.5 | 0.787 |
+| Parameters | 11,130,615 (~11.1M) |
+| FLOPs | 28.5 GFLOPs |
+
+> **Honest note on the target.** The Phase-2 goal was mAP@0.5 ≥ 0.78 on the held-out **test** split. Validation cleared it (0.787); the held-out test came in at **0.766** (imgsz 896) — short of 0.78 by 0.014. We report the test number as the headline generalization figure rather than leading with the higher validation value. See [Evaluation](#evaluation).
+
+## What's new in v2 (v1 → v2)
+
+| Aspect | v1 (YOLOv8n) | v2 (YOLOv8s) |
+|---|---|---|
+| Backbone | nano | small |
+| Parameters | ~3.0M | ~11.1M |
+| Training images | 57,904 (1 dataset) | 80,304 (5 datasets merged + MD5 dedup) |
+| Augmentation | ultralytics defaults | + Albumentations (CoarseDropout, MotionBlur, RandomGamma, CLAHE) + perspective |
+| Epochs | 100 | 150 (cosine LR) |
+| Train image size | 640 | 896 |
+| Hardware | Kaggle 2× T4 (16GB) | GCP L4 (24GB), single 61.25 hr run |
+| Test mAP@0.5 | 0.701 | **0.766** (896) / 0.754 (640) |
+| Test mAP@0.5:0.95 | 0.441 | **0.487** (896) / 0.485 (640) |
+| Deployed weights | `best.onnx` (640) | `v2/best_640.onnx` + `v2/best_896.onnx` |
+
+Test-vs-test improvement: **+6.5 mAP@0.5 / +4.6 mAP@0.5:0.95** at imgsz 896 (+5.3 mAP@0.5 at 640). Two failure-mode classes improved dramatically — see [Failure modes](#failure-modes).
 
 ## Model description
 
-YOLOv8n fine-tuned for 13-class PPE detection covering hard hats, safety vests, goggles, gloves, masks, fall harnesses, their "missing/no" violation counterparts, fall detection, and a Person class.
+13-class PPE detection covering hard hats, safety vests, goggles, gloves, masks, their "missing/no" violation counterparts, fall detection, fall-harness absence, and a Person class.
 
-- **Base model:** [Ultralytics YOLOv8n](https://github.com/ultralytics/ultralytics) (AGPL-3.0)
-- **Output:** 17 channels × 8400 anchor predictions → NMS → bounding boxes + class labels + confidence scores
+- **Base model:** [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) (AGPL-3.0) — `yolov8s.pt` for v2, `yolov8n.pt` for v1
+- **Output:** 17 channels × N anchors (8400 at 640, 16464 at 896) → NMS → boxes + class labels + confidence
 - **Use it for:** flagging likely PPE violations in static images and short video clips for human review
 - **Do not use it for:** automated disciplinary action, medical/clinical PPE, food safety, hazmat suits, or any standalone enforcement decision
 
@@ -57,117 +83,152 @@ YOLOv8n fine-tuned for 13-class PPE detection covering hard hats, safety vests, 
 
 ## Training data
 
-[PPE-Combined v1](https://universe.roboflow.com/mazz-maxx/ppe-combined-9bprl-mmcaf) (Roboflow Universe, forked from `s-workspace-cjeuu/ppe-combined-9bprl`).
+### v2 (current)
 
-| Split | Images | Annotated instances |
-|---|---|---|
-| Train | 41,922 | — |
-| Validation | 10,834 | 25,308 |
-| Test (held-out) | 5,148 | 11,303 |
-| **Total** | **57,904** | |
+Five Roboflow Universe datasets merged into one corpus, deduplicated by MD5 hash and remapped to the 13 canonical classes:
+
+- `ppe-combined-9bprl-mmcaf` (v1)
+- `hardhat-safetyvest` (v1)
+- `fall-detection-ca3o8` (v4)
+- `safety_ppe` (v1)
+- `construction-safety-gears-vcbdq` (v1)
+
+| Split | Images |
+|---|---|
+| Train | 68,253 |
+| Validation | 8,025 |
+| Test (held-out) | 4,026 |
+| **Total (post-dedup)** | **80,304** |
+
+Stratified 85/10/5 split (~6.4 GB). Dataset selection deliberately favored side/back/occluded poses, low-light and high-glare scenes, and non-frontal workers to address v1's frontal bias.
+
+### v1 (original)
+
+[PPE-Combined v1](https://universe.roboflow.com/mazz-maxx/ppe-combined-9bprl-mmcaf) — 57,904 images (41,922 train / 10,834 val / 5,148 test).
 
 ## Training procedure
 
-- **Hardware:** Kaggle Notebooks, 2× NVIDIA Tesla T4 (15.6 GB VRAM each)
-- **Framework:** Ultralytics 8.3.40, PyTorch 2.10.0 + CUDA 12.8
-- **Epochs:** 100
-- **Batch size:** 32
-- **Image size:** 640×640
-- **Optimizer:** SGD (lr0=0.01, momentum=0.937, weight_decay=0.0005, default ultralytics schedule)
-- **Wall time:** ~15 hours across two Kaggle Save Versions (12-hour session cap forced a mid-run resume at epoch 82)
-- **Resume:** Save Version 1 crashed at epoch 82.5/100 on the Kaggle 12-hour cap. Save Version 2 resumed from the `epoch82.pt` checkpoint via `wandb.init(id="9nctv2ai", resume="must", settings=wandb.Settings(init_timeout=300))` and completed epochs 83–100 cleanly.
+### v2 (current)
+
+- **Hardware:** GCP L4 24GB (`g2-standard-8`, `asia-southeast1-c`)
+- **Framework:** Ultralytics 8.4.51, PyTorch 2.12.0 + CUDA 13.0
+- **Epochs:** 150 · **Batch:** 24 · **Image size:** 896 · **LR schedule:** cosine
+- **Augmentation:** Albumentations (CoarseDropout, MotionBlur, RandomGamma, CLAHE — non-spatial) + native perspective, mosaic, mixup, HSV jitter
+- **multi_scale:** False (see ADR-012 — `multi_scale=True` OOMs at batch=24 on a 24GB L4 at peak image size; the marginal benefit isn't worth halving the batch / ~95 hr wall time for a fixed-resolution deployment)
+- **Class balancing:** none applied — augmentation alone hit target; the planned class-weighted loss was not needed (NO-Mask remained trainable at recall 0.789)
+- **Wall time:** 61.25 hours, single uninterrupted run (no session cap, no resume), ~24 min/epoch, GPU memory 10–21 GB
+
+### v1 (original)
+
+- Kaggle Notebooks, 2× Tesla T4 · Ultralytics 8.3.40 · 100 epochs · batch 32 · imgsz 640 · SGD
+- ~15 hr across two Kaggle Save Versions (12-hr cap forced a resume at epoch 82)
 
 ### Experiment tracking
 
-- **W&B run** (public): https://wandb.ai/agcr7jw-vellore-institute-of-technology/safetyvision/runs/9nctv2ai
-  - Epochs 1–82: full charts available
-  - Epochs 83–100: W&B callback didn't fire after resume (known ultralytics+wandb sharp edge). Canonical metrics for all 100 epochs are in [`model/yolov8n-ppe-v1/results.csv`](https://github.com/ayushgupta07xx/SafetyVision/blob/main/model/yolov8n-ppe-v1/results.csv) in the repo.
-- **MLflow:** local file-based tracking committed at [`mlruns/`](https://github.com/ayushgupta07xx/SafetyVision/tree/main/mlruns), run ID `f1932e539038417dad6db757affd50e6`.
+- **W&B run (v2, public):** https://wandb.ai/agcr7jw-vellore-institute-of-technology/Ultralytics/runs/yolov8s-ppe-v2_20260519_065053
+  - Logged under the `Ultralytics` project (the ultralytics W&B callback hardcodes the project name and ignores `WANDB_PROJECT`).
+- **MLflow (v2):** local file store committed at [`mlruns/`](https://github.com/ayushgupta07xx/SafetyVision/tree/main/mlruns), experiment `621501274199551492`, run `0af3bb3c50b84db3ac376d7e63e558d8`.
+- The v1 W&B run (`9nctv2ai`) has expired; v1 canonical metrics live in `model/yolov8n-ppe-v1/results.csv` in the repo.
 
 ## Evaluation
 
-### Headline metrics (held-out test split, 5,148 images)
+Honest numbers, no cherry-picking. The held-out test split (4,026 images, never seen during training/validation) is the canonical generalization measure.
 
-| Metric | Test | Validation |
-|---|---|---|
-| **mAP@0.5** | **0.701** | 0.693 |
-| **mAP@0.5:0.95** | **0.441** | 0.431 |
-| Precision | 0.607 | 0.629 |
-| Recall | 0.711 | 0.716 |
+### v2 headline (held-out test, 4,026 images, 12,080 instances)
 
-Test split is slightly *better* than validation — clean generalization signal, no overfitting.
+| Measurement | mAP@0.5 | mAP@0.5:0.95 | P | R |
+|---|---|---|---|---|
+| `.pt` @ imgsz 896 (model ceiling) | **0.766** | 0.487 | 0.731 | 0.757 |
+| `.pt` @ imgsz 640 | 0.754 | 0.485 | 0.724 | 0.736 |
+| **ONNX @ imgsz 640 (deployed, Lambda)** | **0.738** | 0.463 | 0.723 | 0.715 |
+| Validation @ imgsz 896 | 0.787 | 0.504 | 0.755 | 0.778 |
 
-### Per-class test metrics
+The ~0.016 ONNX-vs-`.pt` gap at 640 is fp32 numerical drift through onnxslim/opset-20 (precision is unchanged, recall dips slightly at the detection threshold), not a broken export. The 640 ONNX ships on AWS Lambda (CPU budget); the 896 ONNX ships on Hugging Face Spaces (16GB RAM) for the full 0.766 ceiling.
+
+### v2 per-class test metrics (imgsz 896)
 
 | Class | Instances | P | R | mAP@0.5 | mAP@0.5:0.95 |
 |---|---:|---:|---:|---:|---:|
-| Fall-Detected | 450 | 0.775 | 0.793 | 0.838 | 0.555 |
-| Gloves | 569 | 0.765 | 0.715 | 0.802 | 0.416 |
-| **Goggles** | 470 | 0.798 | 0.860 | **0.908** | 0.528 |
-| **Hardhat** | 5,100 | 0.813 | 0.883 | **0.891** | 0.518 |
-| Mask | 434 | 0.568 | 0.733 | 0.651 | 0.394 |
-| NO-Gloves | 676 | 0.740 | 0.754 | 0.802 | 0.400 |
-| NO-Goggles | 558 | 0.780 | 0.701 | 0.799 | 0.458 |
-| NO-Hardhat | 1,122 | 0.621 | 0.821 | 0.775 | 0.521 |
-| NO-Mask | 218 | 0.502 | 0.763 | 0.573 | 0.378 |
-| NO-Safety Vest | 342 | 0.469 | 0.491 | 0.395 | 0.217 |
-| No_Harness | 1 | 0.000 | 0.000 | 0.000 | 0.000 |
-| Person | 138 | 0.367 | 0.942 | 0.864 | 0.739 |
-| Safety Vest | 1,225 | 0.692 | 0.789 | 0.815 | 0.615 |
+| Fall-Detected | 765 | 0.886 | 0.937 | **0.959** | 0.704 |
+| Hardhat | 5,589 | 0.888 | 0.912 | **0.937** | 0.608 |
+| Goggles | 256 | 0.857 | 0.887 | 0.919 | 0.545 |
+| Safety Vest | 1,015 | 0.816 | 0.831 | 0.892 | 0.648 |
+| Person | 1,038 | 0.870 | 0.798 | 0.861 | 0.584 |
+| No_Harness | 256 | 0.728 | 0.773 | 0.830 | 0.533 |
+| Gloves | 669 | 0.810 | 0.677 | 0.786 | 0.423 |
+| NO-Hardhat | 865 | 0.687 | 0.788 | 0.754 | 0.474 |
+| NO-Gloves | 713 | 0.771 | 0.685 | 0.751 | 0.400 |
+| NO-Goggles | 439 | 0.765 | 0.608 | 0.711 | 0.387 |
+| NO-Mask | 115 | 0.559 | 0.694 | 0.598 | 0.430 |
+| Mask | 143 | 0.387 | 0.825 | 0.575 | 0.376 |
+| **NO-Safety Vest** | 217 | 0.478 | 0.431 | **0.386** | 0.224 |
+| **all** | 12,080 | 0.731 | 0.757 | **0.766** | 0.487 |
 
-Curves and confusion matrices for both splits are committed in [`model/yolov8n-ppe-v1/`](https://github.com/ayushgupta07xx/SafetyVision/tree/main/model/yolov8n-ppe-v1).
+Confusion matrices and PR curves (640 and 896) are committed in [`docs/assets/eval/v2/`](https://github.com/ayushgupta07xx/SafetyVision/tree/main/docs/assets/eval/v2).
+
+### v1 (for reference)
+
+YOLOv8n test mAP@0.5 = **0.701**, mAP@0.5:0.95 = 0.441. Full v1 per-class metrics and curves in `model/yolov8n-ppe-v1/`.
 
 ## Inference performance
 
-- **GPU (Tesla T4):** preprocess 0.2 ms + inference 2.9 ms + postprocess 1.0 ms = **~4 ms/image total**
+- **v2 GPU (L4), per image:** ~7.5 ms inference @ 896, ~3.5 ms @ 640 (plus ~1 ms pre/post)
+- **v2 CPU (AWS Lambda / HF Spaces):** not yet benchmarked — measured during Phase-1 deploy and added here
+- **ONNX files:** `best_640.onnx` 42.7 MB, `best_896.onnx` 42.8 MB (fp32, opset 20, onnxslim 0.1.94, no external-data sidecar)
 
 ## Intended use
 
-Pre-screening tool to **assist** human workplace safety officers by surfacing likely PPE violations in images and short video clips for human review. Designed for:
-
-- Construction sites
-- Warehouses
-- Manufacturing floors
-- Pre-shift safety walkthroughs
+Pre-screening tool to **assist** human workplace safety officers by surfacing likely PPE violations in images and short video clips for human review. Designed for construction sites, warehouses, manufacturing floors, and pre-shift safety walkthroughs.
 
 **Not a replacement for human judgment.** Predictions must be reviewed by qualified safety personnel before any disciplinary, compliance, or insurance action.
 
 ## Out of scope
 
-- Medical/clinical settings (different PPE: gowns, N95 fit testing, sterile gloves)
-- Food processing (hairnets, beard guards, lab coats not represented)
-- Chemical/hazmat operations (full-face respirators, encapsulating suits not represented)
-- Drone or overhead camera angles (training data is ground-level/eye-level)
+- Medical/clinical settings (gowns, N95 fit testing, sterile gloves)
+- Food processing (hairnets, beard guards, lab coats)
+- Chemical/hazmat operations (full-face respirators, encapsulating suits)
+- Drone or overhead camera angles (training data is ground/eye level)
 - Crowded scenes with heavy mutual occlusion
-- Real-time alerting where missing a violation is unacceptable
+- Real-time alerting where missing a single violation is unacceptable
 
 ## Failure modes
 
-Documented from training data review and observed test errors:
+Documented from training-data review and observed v2 test errors:
 
-- **Low light or high glare** — Confidence drops sharply; expect both false positives and false negatives.
-- **Partial occlusion** — Workers partially behind machinery or other workers may have PPE missed.
-- **Unusual PPE colors** — Training data skews to high-vis yellow/orange/lime vests and standard white/yellow hard hats. Rare colors (blue, black) may go undetected.
-- **Small workers (<50 px height)** — Distant figures often missed entirely.
-- **Fast motion in video** — Motion blur causes missed frames. Mitigate by aggregating across multiple frames per scene rather than relying on any single frame.
-- **`No_Harness` class** — Severely underrepresented in training and test data (1 test instance, 276 val instances). Effectively unusable as a detector until training data is augmented. **Do not rely on this class for fall-arrest compliance.**
-- **`NO-Safety Vest` class** — Weakest violation class (test mAP 0.395). High false-negative rate.
+- **NO-Safety Vest is the weakest class** (test mAP@0.5 0.386, only 217 instances). High false-negative rate — do not rely on it as the sole vest-compliance signal.
+- **Mask / NO-Mask are weak** (0.58 / 0.60). One source dataset (`construction-safety-gears`) mixes COVID-style face-mask close-ups into the industrial-mask class, adding domain noise. Mask precision in particular suffers (0.39).
+- **Low light / high glare** — confidence drops; expect both false positives and false negatives.
+- **Partial occlusion** — workers behind machinery/other workers may have PPE missed (improved vs v1 but not solved).
+- **Small workers (<50 px height)** — distant figures often missed.
+- **Fast motion in video** — motion blur causes missed frames; aggregate across frames rather than trusting any single frame.
+- **Rare PPE colors** — training skews to high-vis vests and standard hard-hat colors.
+
+**Improved in v2 (previously failure modes):**
+- **No_Harness** was effectively unusable in v1 (1 test instance, mAP 0.000). v2 adds fall-detection data → 256 test instances at mAP@0.5 **0.83**. Now a usable signal, though still validate before relying on it for fall-arrest compliance.
+- **Frontal bias / Person detection** — v1 Person precision was 0.37; v2 reaches **0.87** (P) with mAP 0.86 on 7× more test instances, reflecting the deliberate inclusion of side/back/occluded poses in the v2 dataset.
 
 ## Bias and limitations
 
-- Training data over-represents Western construction/industrial sites; demographics and PPE conventions in South/Southeast Asia, Africa, and the Middle East may be underrepresented.
-- Heavily skewed toward male-presenting workers in training imagery.
-- The Person class inherits biases from the underlying YOLOv8 COCO pretraining.
-- Indoor warehouse lighting is overrepresented; bright outdoor sun and underground/tunnel environments may degrade performance.
-- 13 classes is a fixed taxonomy — site-specific PPE (e.g., arc-flash hoods, cut-resistant sleeves) will not be detected.
+- Training data over-represents Western construction/industrial sites; PPE conventions in South/Southeast Asia, Africa, and the Middle East may be underrepresented.
+- Heavily skewed toward male-presenting workers.
+- The Person class inherits biases from YOLOv8 COCO pretraining.
+- Indoor warehouse lighting overrepresented; bright outdoor sun and underground/tunnel environments may degrade performance.
+- 13 classes is a fixed taxonomy — site-specific PPE (arc-flash hoods, cut-resistant sleeves) is not detected.
 
 ## Files
 
+### v2 (`v2/`)
+
 | File | Size | Description |
 |---|---|---|
-| `best.pt` | 6.0 MB | PyTorch weights, load with `ultralytics.YOLO("best.pt")` |
-| `best.onnx` | 11.6 MB | ONNX export (opset 18, slimmed with onnxslim 0.1.93) |
-| `best.onnx.data` | 11.6 MB | External weights for `best.onnx` — **must be co-located** with the .onnx file |
+| `v2/best.pt` | ~22.5 MB | PyTorch weights — `ultralytics.YOLO("best.pt")` |
+| `v2/last.pt` | ~22.5 MB | Final-epoch checkpoint |
+| `v2/best_640.onnx` | ~42.7 MB | ONNX (imgsz 640) — AWS Lambda deployment |
+| `v2/best_896.onnx` | ~42.8 MB | ONNX (imgsz 896) — HF Spaces deployment |
+
+### v1 (repo root)
+
+`best.pt`, `best.onnx`, `best.onnx.data` (v1 ONNX uses an external-data sidecar that must be co-located).
 
 ## Usage
 
@@ -177,7 +238,7 @@ Documented from training data review and observed test errors:
 from ultralytics import YOLO
 from huggingface_hub import hf_hub_download
 
-weights = hf_hub_download(repo_id="ayushgupta7777/safetyvision-yolov8", filename="best.pt")
+weights = hf_hub_download(repo_id="ayushgupta7777/safetyvision-yolov8", filename="v2/best.pt")
 model = YOLO(weights)
 results = model("worksite_image.jpg")
 results[0].show()
@@ -190,22 +251,22 @@ import cv2, numpy as np
 import onnxruntime as ort
 from huggingface_hub import hf_hub_download
 
-# Both .onnx and .onnx.data must be in the same directory
-hf_hub_download(repo_id="ayushgupta7777/safetyvision-yolov8", filename="best.onnx.data")
-onnx_path = hf_hub_download(repo_id="ayushgupta7777/safetyvision-yolov8", filename="best.onnx")
-
+onnx_path = hf_hub_download(repo_id="ayushgupta7777/safetyvision-yolov8", filename="v2/best_640.onnx")
 session = ort.InferenceSession(onnx_path)
+
 img = cv2.imread("worksite_image.jpg")
-img = cv2.resize(img, (640, 640))
+img = cv2.resize(img, (640, 640))           # letterbox in production; see core/detector.py
 inp = img.transpose(2, 0, 1)[None].astype(np.float32) / 255.0
 outputs = session.run(None, {"images": inp})
 # outputs[0] shape: (1, 17, 8400) — apply your own NMS for final boxes
 ```
 
+For the full 0.766 ceiling on a higher-RAM host, swap `v2/best_640.onnx` → `v2/best_896.onnx` and resize to 896.
+
 ## License
 
 - **Model weights:** AGPL-3.0 (inherited from Ultralytics YOLOv8 base model)
-- **SafetyVision repository code:** see [LICENSE](https://github.com/ayushgupta07xx/SafetyVision/blob/main/LICENSE) in the project repo.
+- **SafetyVision repository code:** see [LICENSE](https://github.com/ayushgupta07xx/SafetyVision/blob/main/LICENSE)
 
 ## Citation
 
@@ -221,6 +282,6 @@ outputs = session.run(None, {"images": inp})
 ## Acknowledgements
 
 - [Ultralytics](https://github.com/ultralytics/ultralytics) for YOLOv8 and the training framework
-- [Roboflow Universe](https://universe.roboflow.com) and the PPE-Combined dataset maintainers
-- [OSHA](https://www.osha.gov) for the public-domain regulation corpus used in incident report generation
-- [Kaggle Notebooks](https://www.kaggle.com/code) for free 2× T4 GPU training
+- [Roboflow Universe](https://universe.roboflow.com) and the PPE dataset maintainers
+- [OSHA](https://www.osha.gov) for the public-domain regulation corpus
+- [Kaggle Notebooks](https://www.kaggle.com/code) (v1 training) and Google Cloud L4 (v2 training)
