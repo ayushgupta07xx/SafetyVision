@@ -78,3 +78,11 @@ logs/
 yolo*.pt
 mlruns/**/artifacts/weights/
 artifacts/onnx/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+.hf_space_build/

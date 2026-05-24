@@ -1,0 +1,33 @@
+# SafetyVision Mode-2 Lambda runtime deps (Phase 1, option C: full pipeline).
+# torch + torchvision are installed separately in the Dockerfile from the CPU
+# wheel index. awslambdaric is installed inline in the Dockerfile (runtime
+# bootstrap, not an app dep). Prophet/forecast excluded — /analyze never uses it.
+# Core ML stack pinned to the locally-validated versions for reproducibility.
+
+# ── Web layer ────────────────────────────────────────────────────────────────
+fastapi>=0.115.0
+mangum>=0.18.0
+python-multipart>=0.0.9        # required by FastAPI for multipart UploadFile
+
+# ── Vision / inference ───────────────────────────────────────────────────────
+onnxruntime==1.23.2            # locally-validated ORT (opset-20 OK)
+opencv-python-headless>=4.10.0
+numpy==1.26.4                  # locally-validated; <2.0
+ultralytics>=8.3.0
+
+# ── Explainability ───────────────────────────────────────────────────────────
+grad-cam>=1.5.0
+shap>=0.46.0
+matplotlib>=3.8.0
+
+# ── RAG + LLM agent ──────────────────────────────────────────────────────────
+qdrant-client>=1.12.0
+sentence-transformers==5.5.0   # locally-validated; pulls transformers 5.x (needs torch>=2.4)
+transformers==5.8.0            # locally-validated; pinned so build can't drift past torch
+google-generativeai>=0.8.0
+langgraph>=0.2.0
+langchain-core>=0.3.0
+
+# ── Infra ────────────────────────────────────────────────────────────────────
+huggingface_hub>=0.24.0
+python-dotenv>=1.0.0
