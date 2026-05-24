@@ -141,7 +141,7 @@ Honest numbers, no cherry-picking. The held-out test split (4,026 images, never 
 | `.pt` @ imgsz 896 (model ceiling) | **0.766** | 0.487 | 0.731 | 0.757 |
 | `.pt` @ imgsz 640 | 0.754 | 0.485 | 0.724 | 0.736 |
 | **ONNX @ imgsz 640 (deployed, Lambda)** | **0.738** | 0.463 | 0.723 | 0.715 |
-| **ONNX @ imgsz 896 (deployed, HF Spaces)** | **0.763** | 0.482 | — | — |
+| **ONNX @ imgsz 896 (deployed, HF Spaces)** | **0.763** | 0.482 | 0.724 | 0.751 |
 | Validation @ imgsz 896 | 0.787 | 0.504 | 0.755 | 0.778 |
 
 The ~0.016 ONNX-vs-`.pt` gap at 640 is fp32 numerical drift through onnxslim/opset-20 (precision is unchanged, recall dips slightly at the detection threshold), not a broken export. The 640 ONNX ships on AWS Lambda (CPU budget); the 896 ONNX ships on Hugging Face Spaces (16GB RAM) for the full 0.766 ceiling.
