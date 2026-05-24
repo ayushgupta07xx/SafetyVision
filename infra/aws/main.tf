@@ -189,6 +189,16 @@ resource "aws_lambda_permission" "function_url" {
   function_url_auth_type = "NONE"
 }
 
+# AWS began enforcing (Oct 2025) that public NONE-auth Function URLs
+# need lambda:InvokeFunction in addition to lambda:InvokeFunctionUrl.
+resource "aws_lambda_permission" "public_invoke_function" {
+  statement_id           = "UrlPolicyInvokeFunction"
+  action                 = "lambda:InvokeFunction"
+  function_name          = aws_lambda_function.inference.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
+}
+
 # ─── Budgets — $1 / $5 / $10 email alerts ───────────────────────────────────────
 resource "aws_budgets_budget" "monthly" {
   name         = "${var.project}-monthly"

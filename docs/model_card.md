@@ -141,6 +141,7 @@ Honest numbers, no cherry-picking. The held-out test split (4,026 images, never 
 | `.pt` @ imgsz 896 (model ceiling) | **0.766** | 0.487 | 0.731 | 0.757 |
 | `.pt` @ imgsz 640 | 0.754 | 0.485 | 0.724 | 0.736 |
 | **ONNX @ imgsz 640 (deployed, Lambda)** | **0.738** | 0.463 | 0.723 | 0.715 |
+| **ONNX @ imgsz 896 (deployed, HF Spaces)** | **0.763** | 0.482 | — | — |
 | Validation @ imgsz 896 | 0.787 | 0.504 | 0.755 | 0.778 |
 
 The ~0.016 ONNX-vs-`.pt` gap at 640 is fp32 numerical drift through onnxslim/opset-20 (precision is unchanged, recall dips slightly at the detection threshold), not a broken export. The 640 ONNX ships on AWS Lambda (CPU budget); the 896 ONNX ships on Hugging Face Spaces (16GB RAM) for the full 0.766 ceiling.
@@ -175,6 +176,7 @@ YOLOv8n test mAP@0.5 = **0.701**, mAP@0.5:0.95 = 0.441. Full v1 per-class metric
 - **v2 GPU (L4), per image:** ~7.5 ms inference @ 896, ~3.5 ms @ 640 (plus ~1 ms pre/post)
 - **v2 CPU (AWS Lambda / HF Spaces):** not yet benchmarked — measured during Phase-1 deploy and added here
 - **ONNX files:** `best_640.onnx` 42.7 MB, `best_896.onnx` 42.8 MB (fp32, opset 20, onnxslim 0.1.94, no external-data sidecar)
+- **ONNX @896 sha256:** `b250353639e01800f9cbe79c6002b8b041bdae7560328b8e18ad4a42dc3844e1` (verified deployed HF Spaces artifact)
 
 ## Intended use
 

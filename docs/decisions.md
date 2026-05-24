@@ -599,3 +599,62 @@ The deployed Lambda figure is the **ONNX @ 640 = 0.738**, not the `.pt` 0.754 �
 *Future ADRs (placeholders):*
 - ADR-006 — Lambda Function URLs over AWS API Gateway (Week 3)
 - ADR-007 — Gradio vs FastAPI for HF Spaces (Week 3)
+---
+
+## ADR-006 — Lambda Function URLs over AWS API Gateway
+
+**Status:** Accepted (Week 3). Permission model corrected Chat 13.
+
+**Context:** Mode 2 needs one public HTTPS `/analyze` endpoint for image inference. Two AWS options: API Gateway (REST/HTTP) or a Lambda Function URL.
+
+**Decision:** Lambda Function URL.
+- Free forever — no 12-month free-tier expiry (API Gateway's REST tier expires).
+- Single built-in HTTPS endpoint; no stages, usage plans, or gateway-layer API keys to manage.
+- API-key auth + rate limiting live at the handler level (Supabase-validated key, reserved concurrency = 10), not at a gateway.
+
+**Alternatives considered:** API Gateway — more flexible (usage plans, request transformation, WAF) but the free-tier expiry and extra surface aren't justified for a single endpoint. Kept as the documented "evaluated alternative."
+
+**Consequences:**
+- 6MB synchronous payload cap is a hard constraint. A 413 on a large body is expected behaviour, not a bug → route through Mode 1. This is why Mode 2 is image-only; video stays Mode 1 + Mode 3.
+- (Chat 13) AWS began enforcing in **Oct 2025** that public (`AuthType=NONE`) Function URLs need BOTH `lambda:InvokeFunctionUrl` AND `lambda:InvokeFunction` in the resource policy. Terraform's `aws_lambda_function_url` only adds the `InvokeFunctionUrl` half → the public URL returned `403 Forbidden` until a second `aws_lambda_permission` (`InvokeFunction`, principal `*`, `invoked_via_function_url`) was added. Runbook: `aws_deploy.md`. The Terraform block is committed so a clean apply reproduces it.
+
+---
+
+## ADR-007 — Gradio over FastAPI for the HF Spaces demo (Mode 1)
+
+**Status:** Accepted (Week 3).
+
+**Context:** Mode 1 is the public, no-signup demo on HF Spaces (free CPU): upload image/video → annotated image, GradCAM, SHAP, OSHA incident report, forecast — all in-browser, zero frontend build. Mode 2 (Lambda) already serves the same pipeline as a FastAPI JSON API.
+
+**Decision:** Gradio for Mode 1; FastAPI stays Mode 2 only.
+- Gradio renders a full interactive UI (upload, tabbed outputs, plots) from pure Python — no HTML/JS/React — and HF Spaces' native Gradio SDK auto-builds and hosts it.
+- FastAPI returns JSON, not a UI; making it a *demo* would mean building and hosting a separate frontend — wasted effort for a surface whose whole point is "try it in the browser."
+- Both surfaces share the same `core/` + `agent/` pipeline, so only the presentation layer differs — no logic duplication.
+
+**Consequences:**
+- The Space `sdk_version` must match the locally-tested Gradio (6.14.0) or HF builds a different major and the app breaks (caught + fixed Chat 13).
+- Mode 3 (Next.js, Phase 2) becomes the polished product UI; Gradio/HF Spaces stays the lightweight embeddable open-source demo.
+
+---
+
+## ADR-014 — Lambda container: custom Debian-slim base + awslambdaric (not the AWS base image)
+
+**Status:** Accepted (Chat 12).
+
+**Context:** The Mode 2 Lambda runs the v2 ONNX, an **opset-20** export. The AWS-provided `python:3.11` base (Amazon Linux 2023) caps onnxruntime at 1.16.3, whose max ONNX opset is 19 — it cannot load the validated opset-20 artifact.
+
+**Alternatives considered:**
+- **A** — AWS base + re-export the ONNX down to opset 19. Rejected: discards the validated opset-20 artifact and adds a re-export/re-validate cycle.
+- **B** — AWS base + pin onnxruntime ≤1.16.3. Rejected: same opset-19 ceiling; the model won't load.
+- **C (chosen)** — custom `python:3.11-slim` (Debian, glibc 2.36) base, which resolves onnxruntime ≥1.19, so the opset-20 artifact ships untouched. `awslambdaric` (Lambda Runtime Interface Client) supplies the runtime bootstrap the AWS base had built in.
+
+**Decision:** Option C.
+- Debian slim → onnxruntime ≥1.19 → opset-20 model loads unchanged.
+- `awslambdaric` is the container entrypoint (replaces the AWS base's built-in bootstrap).
+- System libs the AWS base bundled but slim doesn't: `libgomp1` (OpenMP — onnxruntime/opencv), `libglib2.0-0` (glib threads — cv2 import), `libgl1` (libGL.so.1 — ultralytics pulls full opencv-python).
+- CPU-only torch (`2.12.0+cpu`, required by transformers 5.x) via `--extra-index-url`; numpy pinned first.
+
+**Consequences:**
+- Build context must be the repo root (Dockerfile needs `core/` + `agent/`).
+- First build ~10–20 min, image ~3–4 GB — don't Ctrl+C on pip/layer progress.
+- Leaving the AWS base means we own the runtime bootstrap and the system-lib list (documented in the Dockerfile header + `aws_deploy.md`).
