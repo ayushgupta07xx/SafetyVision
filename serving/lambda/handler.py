@@ -74,7 +74,7 @@ def root() -> dict:
 
 
 @app.post("/analyze")
-async def analyze(image: UploadFile = File(...)) -> dict:
+async def analyze(image: UploadFile = File(...)) -> dict:  # noqa: B008
     """Run the full detection + explanation + incident-report pipeline."""
     t0 = time.perf_counter()
 

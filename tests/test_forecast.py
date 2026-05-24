@@ -78,7 +78,7 @@ class TestLoadComplianceSeries:
 class TestProphetForecast:
     def test_returns_dataframe_and_figure(self, tmp_db):
         seed_violations.seed(days=30, rng_seed=42)
-        df, fig = forecast.forecast_compliance(
+        df, fig, _summary = forecast.forecast_compliance(
             "NO-Hardhat", db_path=tmp_db, history_days=30, horizon_days=7,
         )
         assert {"ds", "yhat", "yhat_lower", "yhat_upper"} <= set(df.columns)

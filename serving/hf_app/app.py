@@ -30,12 +30,12 @@ import cv2  # noqa: E402
 import gradio as gr  # noqa: E402
 import numpy as np  # noqa: E402
 
-from core.detector import PPEDetector, draw_annotations  # noqa: E402
-from core.explainer import explain_result  # noqa: E402
 from agent.graph import run_agent  # noqa: E402
 from agent.tools import SQLITE_DB_PATH  # noqa: E402
 from analytics.forecast import forecast_compliance  # noqa: E402
 from analytics.seed_violations import seed  # noqa: E402
+from core.detector import PPEDetector, draw_annotations  # noqa: E402
+from core.explainer import explain_result  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Logging + constants
@@ -255,7 +255,7 @@ def _analyze_video(video_path: str, progress: gr.Progress):
 # ---------------------------------------------------------------------------
 # Gradio handlers
 # ---------------------------------------------------------------------------
-def analyze(image_rgb, video_path, progress=gr.Progress()):
+def analyze(image_rgb, video_path, progress=gr.Progress()):  # noqa: B008
     if image_rgb is None and not video_path:
         raise gr.Error("Upload an image or a short video clip first.")
     if image_rgb is not None and video_path:
@@ -286,10 +286,10 @@ def build_forecast(violation_type: str):
         _, fig, summary = forecast_compliance(violation_type)
         return summary, fig
     except ValueError as e:
-        raise gr.Error(str(e))
+        raise gr.Error(str(e)) from e
     except Exception as e:  # noqa: BLE001
         log.exception("Forecast failed")
-        raise gr.Error(f"Forecast unavailable: {e}")
+        raise gr.Error(f"Forecast unavailable: {e}") from e
 
 
 # ---------------------------------------------------------------------------

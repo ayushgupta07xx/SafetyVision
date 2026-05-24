@@ -84,7 +84,7 @@ def main() -> None:
         total += n_total
         print(f"  {s}: train={n_train}, val={n_val}, test={n_test} (total {n_total})")
     print(f"\nGrand total (raw, pre-merge): {total} images")
-    print(f"\nNext: python -m model.datasets.merge")
+    print("\nNext: python -m model.datasets.merge")
 
 
 if __name__ == "__main__":

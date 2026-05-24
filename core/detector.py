@@ -90,6 +90,7 @@ class PPEDetector:
     (unless onnx_path is supplied, e.g. by the Lambda container)."""
 
     _instance: PPEDetector | None = None
+    img_size: int = IMG_SIZE  # class default; __init__ sets the real value per ONNX
 
     def __init__(
         self,
@@ -262,7 +263,7 @@ class PPEDetector:
                 risk_level=RISK_LEVELS[d.cls],
                 confidence=d.confidence,
                 bbox=d.bbox,
-                person_bbox=best_person.bbox if paired else None,
+                person_bbox=best_person.bbox if (paired and best_person is not None) else None,
             ))
         return violations
 

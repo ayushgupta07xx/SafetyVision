@@ -25,7 +25,6 @@ import shutil
 from collections import Counter, defaultdict
 from pathlib import Path
 from random import Random
-from typing import Optional
 
 import imagehash
 import yaml
@@ -123,13 +122,13 @@ def read_dataset_classes(subdir: str) -> list[str]:
 
 def build_index_remap(
     source_classes: list[str],
-    remap_dict: dict[str, Optional[str]],
+    remap_dict: dict[str, str | None],
     v1_classes: list[str],
-) -> dict[int, Optional[int]]:
+) -> dict[int, int | None]:
     """Build {source_idx: target_v1_idx_or_None} mapping. Case-insensitive."""
     v1_lower = {c.lower(): i for i, c in enumerate(v1_classes)}
     remap_lower = {k.lower(): v for k, v in remap_dict.items()}
-    out: dict[int, Optional[int]] = {}
+    out: dict[int, int | None] = {}
     for src_idx, src_name in enumerate(source_classes):
         target_name = remap_lower.get(src_name.lower())
         if target_name is None:
@@ -144,7 +143,7 @@ def build_index_remap(
     return out
 
 
-def remap_label_file(label_path: Path, idx_remap: dict[int, Optional[int]]) -> list[str]:
+def remap_label_file(label_path: Path, idx_remap: dict[int, int | None]) -> list[str]:
     """Read YOLO label file, remap class indices, drop labels with None target."""
     out: list[str] = []
     if not label_path.exists():
@@ -167,7 +166,7 @@ def remap_label_file(label_path: Path, idx_remap: dict[int, Optional[int]]) -> l
 
 
 def collect_pass1(
-    subdir: str, idx_remap: dict[int, Optional[int]]
+    subdir: str, idx_remap: dict[int, int | None]
 ) -> list[tuple[Path, list[str]]]:
     """Walk dataset, return [(image_path, remapped_labels)] for images with >=1 valid label."""
     out: list[tuple[Path, list[str]]] = []
@@ -188,7 +187,7 @@ def collect_pass1(
     return out
 
 
-def hash_image(path: Path) -> Optional[imagehash.ImageHash]:
+def hash_image(path: Path) -> imagehash.ImageHash | None:
     try:
         with Image.open(path) as im:
             return imagehash.phash(im)
@@ -232,7 +231,7 @@ def split_records(records: list, train_frac: float = 0.85, val_frac: float = 0.1
         by_class[primary_class(rec[1])].append(rec)
 
     train, val, test = [], [], []
-    for cls, items in by_class.items():
+    for _cls, items in by_class.items():
         rng.shuffle(items)
         n = len(items)
         n_train = int(n * train_frac)
@@ -240,7 +239,9 @@ def split_records(records: list, train_frac: float = 0.85, val_frac: float = 0.1
         train.extend(items[:n_train])
         val.extend(items[n_train:n_train + n_val])
         test.extend(items[n_train + n_val:])
-    rng.shuffle(train); rng.shuffle(val); rng.shuffle(test)
+    rng.shuffle(train)
+    rng.shuffle(val)
+    rng.shuffle(test)
     return train, val, test
 
 
