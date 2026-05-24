@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import ast
 import logging
+import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,9 +31,12 @@ logger = logging.getLogger(__name__)
 
 # ─── Constants ──────────────────────────────────────────────────────────────
 HF_REPO = "ayushgupta7777/safetyvision-yolov8"
-ONNX_FILENAME = "v2/best_640.onnx"  # v2 small, 13-class, 640 static shape, no sidecar
+# Default = 640 (Lambda/local). HF Spaces sets SV_ONNX_FILENAME=v2/best_896.onnx
+# to pull the higher-accuracy export. img_size auto-derives from the loaded ONNX
+# input shape, so the filename is the ONLY thing that must change.
+ONNX_FILENAME = os.getenv("SV_ONNX_FILENAME", "v2/best_640.onnx")
 
-IMG_SIZE = 640  # MUST equal the exported ONNX static shape — re-export if changed
+IMG_SIZE = 640  # fallback only; real value derived per-session from the ONNX input shape
 DEFAULT_CONF_THRESHOLD = 0.40
 DEFAULT_IOU_THRESHOLD = 0.45
 PERSON_IOU_MIN = 0.05  # min IoU between NO-X and Person to attach person_bbox
@@ -109,7 +113,14 @@ class PPEDetector:
         self.session = ort.InferenceSession(
             onnx_path, providers=["CPUExecutionProvider"]
         )
-        self.input_name = self.session.get_inputs()[0].name
+        inp = self.session.get_inputs()[0]
+        self.input_name = inp.name
+        # ONNX static shape is [1, 3, H, W]; derive H. Fall back if dynamic.
+        try:
+            self.img_size = int(inp.shape[2])
+        except (TypeError, ValueError):
+            self.img_size = IMG_SIZE
+        logger.info("ONNX input size: %d", self.img_size)
 
         # ultralytics embeds class names in ONNX metadata as a Python-dict string
         meta = self.session.get_modelmeta().custom_metadata_map
@@ -132,12 +143,13 @@ class PPEDetector:
     def _letterbox(
         self, img: np.ndarray
     ) -> tuple[np.ndarray, float, tuple[int, int]]:
-        """Resize preserving aspect ratio, pad to IMG_SIZE x IMG_SIZE with gray."""
+        """Resize preserving aspect ratio, pad to img_size x img_size with gray."""
+        size = self.img_size
         h, w = img.shape[:2]
-        scale = min(IMG_SIZE / h, IMG_SIZE / w)
+        scale = min(size / h, size / w)
         new_h, new_w = int(round(h * scale)), int(round(w * scale))
         resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
-        pad_h, pad_w = IMG_SIZE - new_h, IMG_SIZE - new_w
+        pad_h, pad_w = size - new_h, size - new_w
         top, left = pad_h // 2, pad_w // 2
         padded = cv2.copyMakeBorder(
             resized, top, pad_h - top, left, pad_w - left,

@@ -1,24 +1,25 @@
 --extra-index-url https://download.pytorch.org/whl/cpu
 
 # UI
-gradio>=5.0,<6
+gradio==6.14.0
 
-# Vision + ONNX runtime
-onnxruntime>=1.16
-opencv-python-headless>=4.8
-numpy>=1.24,<2
+# Vision + ONNX runtime (opencv comes from ultralytics below; libgl1 via packages.txt)
+onnxruntime==1.26.0
+numpy==1.26.4
 pillow>=10.0
 
-# Explainability (CPU torch wheel pulled from extra-index above)
-torch>=2.1
-torchvision>=0.16
+# Explainability — GradCAM/SHAP load the .pt via ultralytics (PyTorch backward pass)
+torch==2.12.0+cpu
+torchvision==0.27.0+cpu
+ultralytics==8.4.48
 grad-cam>=1.5
 shap>=0.44
 
 # LLM + RAG
 google-generativeai>=0.7
 qdrant-client>=1.7
-sentence-transformers>=2.5
+sentence-transformers==5.5.0
+transformers==5.8.0
 
 # Agent
 langgraph>=0.2,<1

@@ -1,7 +1,8 @@
 """Prophet 7-day compliance forecasting.
 
 Loads daily compliance rate per violation type from SQLite, fits Prophet with
-weekly seasonality, returns 7-day forecast + Plotly figure for Gradio.
+weekly seasonality, returns 7-day forecast + Plotly figure + a plain-language
+summary for Gradio.
 
 CLI:
     python -m analytics.forecast "NO-Hardhat"
@@ -72,8 +73,8 @@ def forecast_compliance(
     db_path: Path = DB_PATH,
     history_days: int = 30,
     horizon_days: int = 7,
-) -> tuple[pd.DataFrame, go.Figure]:
-    """Fit Prophet, return (full_forecast_df, plotly_figure)."""
+) -> tuple[pd.DataFrame, go.Figure, str]:
+    """Fit Prophet, return (full_forecast_df, plotly_figure, plain_language_summary)."""
     df = load_compliance_series(violation_type, db_path, history_days)
     if len(df) < 14:
         raise ValueError(
@@ -92,34 +93,97 @@ def forecast_compliance(
     forecast = model.predict(future)
 
     fig = _plot_forecast(df, forecast, violation_type)
-    return forecast, fig
+    summary = _summarize_forecast(df, forecast, violation_type, horizon_days)
+    return forecast, fig, summary
+
+
+def _summarize_forecast(
+    history: pd.DataFrame, forecast: pd.DataFrame, vtype: str, horizon_days: int
+) -> str:
+    """One-line plain-language takeaway for non-technical readers."""
+    recent = float(history["y"].tail(7).mean()) * 100
+    fut = forecast.tail(horizon_days)
+    proj_end = float(fut["yhat"].iloc[-1]) * 100
+    delta = float(fut["yhat"].mean()) * 100 - recent
+    if delta > 2:
+        trend = "trending **up**"
+    elif delta < -2:
+        trend = "trending **down**"
+    else:
+        trend = "**roughly stable**"
+    end_date = fut["ds"].iloc[-1].strftime("%b %d").replace(" 0", " ")
+    return (
+        f"### {vtype}\n"
+        f"Recent compliance averaged **{recent:.0f}%** over the last 7 days. "
+        f"The 7-day forecast is {trend}, with about **{proj_end:.0f}%** projected by {end_date}.\n\n"
+        f"_Compliance rate = the share of checks where the required PPE **was** present — "
+        f"higher is better. Dots = the past 30 days; line = the Prophet forecast; "
+        f"shaded band = the 80% uncertainty range._"
+    )
 
 
 def _plot_forecast(history: pd.DataFrame, forecast: pd.DataFrame, vtype: str) -> go.Figure:
+    split = history["ds"].max()      # last actual day; forecast begins after this
+    last = forecast["ds"].max()
+
+    BG = "#0f172a"
+    ACCENT = "#60a5fa"
+    ACCENT_SOFT = "rgba(96,165,250,0.15)"
+    INK = "#e5e7eb"
+    MUTED = "#94a3b8"
+    GRID = "rgba(255,255,255,0.08)"
+
     fig = go.Figure()
-    # CI band
+    # 80% uncertainty band
     fig.add_trace(go.Scatter(
-        x=forecast["ds"], y=forecast["yhat_upper"],
+        x=forecast["ds"], y=forecast["yhat_upper"] * 100,
         mode="lines", line=dict(width=0), showlegend=False, hoverinfo="skip",
     ))
     fig.add_trace(go.Scatter(
-        x=forecast["ds"], y=forecast["yhat_lower"],
+        x=forecast["ds"], y=forecast["yhat_lower"] * 100,
         mode="lines", line=dict(width=0), fill="tonexty",
-        fillcolor="rgba(0,100,200,0.18)", name="80% CI",
+        fillcolor=ACCENT_SOFT, name="Uncertainty (80%)", hoverinfo="skip",
     ))
+    # Forecast line — smoothed
     fig.add_trace(go.Scatter(
-        x=forecast["ds"], y=forecast["yhat"],
-        mode="lines", line=dict(color="rgb(0,100,200)", width=2), name="Prophet forecast",
+        x=forecast["ds"], y=forecast["yhat"] * 100,
+        mode="lines", line=dict(color=ACCENT, width=3, shape="spline"),
+        name="Forecast", hovertemplate="%{x|%b %d}: %{y:.0f}%<extra></extra>",
     ))
+    # Actual history — hollow dots
     fig.add_trace(go.Scatter(
-        x=history["ds"], y=history["y"],
-        mode="markers", marker=dict(size=6, color="black"), name="History",
+        x=history["ds"], y=history["y"] * 100,
+        mode="markers",
+        marker=dict(size=7, color=BG, line=dict(color=INK, width=1.5)),
+        name="Actual (past 30 days)",
+        hovertemplate="%{x|%b %d}: %{y:.0f}%<extra></extra>",
     ))
+
+    # Forecast window shading + divider
+    fig.add_shape(type="rect", xref="x", yref="paper", x0=split, x1=last, y0=0, y1=1,
+                  fillcolor="rgba(255,255,255,0.04)", line_width=0, layer="below")
+    fig.add_shape(type="line", xref="x", yref="paper", x0=split, x1=split, y0=0, y1=1,
+                  line=dict(color=MUTED, width=1, dash="dot"))
+    fig.add_annotation(x=split, xref="x", y=1.0, yref="paper", text="forecast →",
+                       showarrow=False, xanchor="left", yanchor="bottom",
+                       font=dict(size=11, color=MUTED))
+
     fig.update_layout(
-        title=f"7-Day Compliance Forecast (Prophet) — {vtype}",
-        xaxis_title="Date", yaxis_title="Compliance Rate",
-        yaxis=dict(range=[0, 1.05]),
-        height=420, margin=dict(l=40, r=20, t=50, b=40),
+        template="plotly_dark",
+        font=dict(family="Inter, -apple-system, Segoe UI, Roboto, sans-serif",
+                  size=13, color=INK),
+        title=dict(text=f"Compliance forecast — {vtype}",
+                   font=dict(size=18, color=INK), x=0.01, xanchor="left", y=0.96),
+        paper_bgcolor=BG, plot_bgcolor=BG,
+        height=440, margin=dict(l=55, r=24, t=56, b=84),
+        legend=dict(orientation="h", yanchor="top", y=-0.16, xanchor="center", x=0.5,
+                    bgcolor="rgba(0,0,0,0)"),
+        xaxis=dict(title="", showgrid=False, showline=False, zeroline=False,
+                   ticks="outside", tickcolor=GRID, color=MUTED),
+        yaxis=dict(title="Compliance rate (%)", range=[0, 105], ticksuffix="%",
+                   showgrid=True, gridcolor=GRID, showline=False, zeroline=False,
+                   dtick=20, color=MUTED),
+        hoverlabel=dict(bgcolor="#1e293b", font=dict(color=INK), bordercolor=GRID),
     )
     return fig
 
@@ -132,9 +196,10 @@ if __name__ == "__main__":
     p.add_argument("--save", default=None, help="Save plot HTML to this path")
     args = p.parse_args()
 
-    forecast, fig = forecast_compliance(
+    forecast, fig, summary = forecast_compliance(
         args.violation_type, history_days=args.days, horizon_days=args.horizon,
     )
+    print(summary, "\n")
     tail = forecast[["ds", "yhat", "yhat_lower", "yhat_upper"]].tail(args.horizon)
     print(tail.to_string(index=False))
     if args.save:

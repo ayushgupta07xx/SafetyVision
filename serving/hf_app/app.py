@@ -1,6 +1,6 @@
 """SafetyVision Gradio app — Mode 1 (HF Spaces).
 
-Image or short video clip → PPE violation detection (YOLOv8n ONNX) →
+Image or short video clip → PPE violation detection (YOLOv8s ONNX, v2) →
 GradCAM + SHAP explanations → OSHA-grounded incident report (Gemini Flash
 multimodal via single-node LangGraph) → 7-day Prophet compliance forecast.
 
@@ -21,10 +21,11 @@ from pathlib import Path
 # Make project root importable so `core`, `agent`, `analytics` resolve when this
 # file is run as `python serving/hf_app/app.py` locally. On HF Spaces the repo
 # is flat (app.py at root) so this no-ops there.
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-if _REPO_ROOT.exists() and str(_REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(_REPO_ROOT))
-
+_HERE = Path(__file__).resolve()
+if len(_HERE.parents) >= 3:
+    _REPO_ROOT = _HERE.parents[2]
+    if _REPO_ROOT.exists() and str(_REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(_REPO_ROOT))
 import cv2  # noqa: E402
 import gradio as gr  # noqa: E402
 import numpy as np  # noqa: E402
@@ -128,9 +129,9 @@ def _format_report_md(
         return (
             "## ⚠️ Nothing detected in this frame\n\n"
             "The detector found no persons or PPE here. This is a known model "
-            "limitation — YOLOv8n was fine-tuned on industrial worksite imagery "
-            "(frontal-pose workers in vests/hardhats). Casual outdoor poses, "
-            "side/back views, and partial occlusion are frequently missed. "
+            "limitation — best results come from clear worksite imagery. Very "
+            "small/distant workers, low light, glare, and fast motion are still "
+            "missed (v2 augmentation reduced but didn't eliminate this). "
             "See the [model card failure modes]"
             "(https://huggingface.co/ayushgupta7777/safetyvision-yolov8) for details."
         )
@@ -282,8 +283,8 @@ def build_forecast(violation_type: str):
     if not violation_type:
         raise gr.Error("Pick a violation type.")
     try:
-        _, fig = forecast_compliance(violation_type)
-        return fig
+        _, fig, summary = forecast_compliance(violation_type)
+        return summary, fig
     except ValueError as e:
         raise gr.Error(str(e))
     except Exception as e:  # noqa: BLE001
@@ -306,7 +307,7 @@ and a 7-day compliance forecast (Prophet).
 
 _ABOUT = """
 ## Stack
-- **Detection:** YOLOv8n (ONNX, CPU) fine-tuned on 58k PPE images.
+- **Detection:** YOLOv8s (v2, ONNX, CPU) fine-tuned on 80k+ PPE images with Albumentations augmentation.
   [Model card →](https://huggingface.co/ayushgupta7777/safetyvision-yolov8)
 - **Explainability:** GradCAM on the SPPF layer + SHAP per-pixel attribution at 320×320.
 - **RAG:** Qdrant Cloud + BAAI/bge-small-en-v1.5 over 15 OSHA standards (29 CFR 1910 + 29 CFR 1926).
@@ -314,16 +315,16 @@ _ABOUT = """
 - **Orchestration:** Single-node LangGraph (retrieve → report → log).
 - **Forecasting:** Prophet (primary, ADR-008) with SARIMA(1,1,1)(1,1,1,7) baseline.
 
-## Held-out test metrics
-- mAP@50: **0.701**
-- mAP@50-95: **0.441**
+## Held-out test metrics (deployed config: ONNX @ 896)
+- mAP@50: **0.763**  ·  mAP@50-95: **0.482**
+- Strongest: Fall-Detected (0.956), Hardhat (0.936), Safety Vest (0.891).
+- Weakest: NO-Safety Vest (0.382); Mask / NO-Mask (~0.57-0.59).
 - A/B test 1 (RAG vs no-RAG report quality): RAG wins, Cohen's d=0.65, p=0.0197
 - A/B test 2 (confidence threshold 0.40 vs 0.55): 0.40 wins, McNemar p=4×10⁻⁵
 
 ## Honest limitations
 - **Pre-screening tool** — does NOT replace human safety judgment.
-- Misses side-view / back-view / partially-occluded workers (training data is heavily frontal-pose).
-- Low light, glare, fast motion degrade accuracy.
+- v2 augmentation reduced the v1 frontal-pose bias, but small/distant workers, low light, glare, and fast motion still degrade accuracy.
 - Free-tier Gemini quota is ~20 reports/day per model on this Space (resets midnight Pacific).
   One report per analysis to preserve quota.
 - Video sampled at 1 fps; sub-second events can be missed.
@@ -336,7 +337,7 @@ See the GitHub repo for the `terraform apply` walkthrough.
 License: **AGPL-3.0** (inherited from Ultralytics YOLOv8).
 """
 
-with gr.Blocks(title="SafetyVision — AI Workplace Safety Monitor", theme=gr.themes.Soft()) as demo:
+with gr.Blocks(title="SafetyVision — AI Workplace Safety Monitor") as demo:
     gr.Markdown(_HEADER)
 
     with gr.Tab("🔍 Analyze"):
@@ -382,12 +383,16 @@ with gr.Blocks(title="SafetyVision — AI Workplace Safety Monitor", theme=gr.th
             label="Violation type",
         )
         forecast_btn = gr.Button("Render forecast", variant="primary")
+        forecast_summary = gr.Markdown()
         forecast_out = gr.Plot()
-        forecast_btn.click(fn=build_forecast, inputs=[vtype_in], outputs=[forecast_out])
+        forecast_btn.click(
+            fn=build_forecast, inputs=[vtype_in],
+            outputs=[forecast_summary, forecast_out],
+        )
 
     with gr.Tab("ℹ️ About"):
         gr.Markdown(_ABOUT)
 
 
 if __name__ == "__main__":
-    demo.queue(max_size=10).launch(server_name="0.0.0.0")
+    demo.queue(max_size=10).launch(server_name="0.0.0.0", theme=gr.themes.Soft())
