@@ -17,6 +17,7 @@ import time
 import uuid
 from datetime import UTC, datetime, timedelta
 from functools import lru_cache
+from typing import Protocol
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -143,3 +144,34 @@ def log_inspection(
         })
     insert_violations(rows)
     return inspection_id, vids
+
+class _DetectionResult(Protocol):
+    violations: list  # duck-typed; real type is core.detector's result
+
+
+def persist_inspection_from_result(
+    user_id: str,
+    result: _DetectionResult,
+    incident_report: dict | None = None,
+    source: str = "api",
+    image_url: str | None = None,
+) -> tuple[str, list[str]]:
+    """Adapt a detector result + incident report into one inspection + violations.
+
+    Highest-confidence violation carries the report's citation/summary; the rest
+    carry detection fields only. Zero-violation results STILL create an inspection
+    row (a clean check is the forecast's compliance=1.0 denominator).
+    Returns the persisted (inspection_id, [violation_id ...]).
+    """
+    violations = list(result.violations)
+    report = incident_report or {}
+    if violations:
+        primary = max(violations, key=lambda v: v.confidence)
+        items = [(v, report if v is primary else {}) for v in violations]
+    else:
+        items = []
+    n_det = len(getattr(result, "detections", violations))
+    return log_inspection(
+        user_id, items, source=source, source_type="image",
+        image_url=image_url, total_detections=n_det,
+    )

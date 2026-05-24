@@ -26,7 +26,7 @@ import uuid
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from mangum import Mangum
 
 from agent.graph import run_agent
@@ -74,8 +74,16 @@ def root() -> dict:
 
 
 @app.post("/analyze")
-async def analyze(image: UploadFile = File(...)) -> dict:  # noqa: B008
-    """Run the full detection + explanation + incident-report pipeline."""
+async def analyze(
+    image: UploadFile = File(...),  # noqa: B008
+    user_id: str | None = Form(default=None),  # noqa: B008 — Layer 10: replace with X-API-Key resolution
+) -> dict:
+    """Run the full detection + explanation + incident-report pipeline.
+
+    When user_id is supplied, the inspection + violations persist to Supabase
+    (Mode 3 user history) and the response references the real rows. Layer 10
+    swaps the user_id form field for X-API-Key resolution — this call is unchanged.
+    """
     t0 = time.perf_counter()
 
     data = await image.read()
@@ -115,19 +123,34 @@ async def analyze(image: UploadFile = File(...)) -> dict:  # noqa: B008
             logger.exception("agent report failed")
             incident_report = {"error": str(exc)}
 
+    # 4) Persist to Supabase user history when authenticated (Mode 3 / API key).
+    if user_id:
+        try:
+            from core import supabase_db  # lazy — keeps cold start lean
+            inspection_id, vids = supabase_db.persist_inspection_from_result(
+                user_id, result, incident_report, source="api",
+            )
+        except Exception:  # noqa: BLE001 — a log-write must never fail the request
+            logger.exception("supabase persist failed")
+            inspection_id = str(uuid.uuid4())
+            vids = [str(uuid.uuid4()) for _ in result.violations]
+    else:
+        inspection_id = str(uuid.uuid4())
+        vids = [str(uuid.uuid4()) for _ in result.violations]
+
     violations_json = [
         {
-            "violation_id": str(uuid.uuid4()),
+            "violation_id": vid,
             "class": v.type,
             "confidence": round(v.confidence, 4),
             "bbox": [round(c, 1) for c in v.bbox],
             "risk_level": v.risk_level,
         }
-        for v in result.violations
+        for v, vid in zip(result.violations, vids, strict=True)
     ]
 
     return {
-        "inspection_id": str(uuid.uuid4()),
+        "inspection_id": inspection_id,
         "violations": violations_json,
         "annotated_image_b64": annotated_b64,
         "gradcam_b64": gradcam_b64,

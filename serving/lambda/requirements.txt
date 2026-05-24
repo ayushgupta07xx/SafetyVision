@@ -31,3 +31,5 @@ langchain-core>=0.3.0
 # ── Infra ────────────────────────────────────────────────────────────────────
 huggingface_hub>=0.24.0
 python-dotenv>=1.0.0
+
+supabase>=2.30
