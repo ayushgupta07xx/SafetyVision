@@ -17,7 +17,7 @@ import time
 import uuid
 from datetime import UTC, datetime, timedelta
 from functools import lru_cache
-from typing import Protocol
+from typing import Protocol, cast
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -175,3 +175,24 @@ def persist_inspection_from_result(
         user_id, items, source=source, source_type="image",
         image_url=image_url, total_detections=n_det,
     )
+
+def fetch_violations(user_id: str, limit: int = 50, offset: int = 0) -> list[dict]:
+    """Return a user's violation history, newest first, paginated.
+
+    Service-role read scoped explicitly by user_id (RLS is bypassed here, so the
+    user_id filter is mandatory). PostgREST range is inclusive.
+    """
+    resp = (
+        _client()
+        .table("violations")
+        .select(
+            "violation_id, inspection_id, timestamp_ms, violation_type, "
+            "risk_level, confidence, regulation_cited, summary, "
+            "pdf_report_url, source"
+        )
+        .eq("user_id", user_id)
+        .order("timestamp_ms", desc=True)
+        .range(offset, offset + limit - 1)
+        .execute()
+    )
+    return cast("list[dict]", resp.data or [])

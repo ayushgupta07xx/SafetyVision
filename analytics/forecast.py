@@ -197,6 +197,62 @@ def _plot_forecast(history: pd.DataFrame, forecast: pd.DataFrame, vtype: str) ->
     )
     return fig
 
+def forecast_json(
+    violation_type: str,
+    db_path: Path = DB_PATH,
+    history_days: int = 30,
+    horizon_days: int = 7,
+    source: str = "sqlite",
+    user_id: str | None = None,
+) -> dict:
+    """API-friendly forecast for the Mode-2 /forecast endpoint.
+
+    Same Prophet fit as forecast_compliance, but returns JSON-serializable
+    history + forecast points + a summary -- no Plotly figure (the API path
+    must not build figures).
+    """
+    df = load_compliance_series(
+        violation_type, db_path, history_days, source=source, user_id=user_id
+    )
+    if len(df) < 14:
+        raise ValueError(
+            f"Need >=14 days of history for weekly seasonality (got {len(df)})."
+        )
+    model = Prophet(
+        weekly_seasonality=True,
+        daily_seasonality=False,
+        yearly_seasonality=False,
+        interval_width=0.80,
+    )
+    model.fit(df)
+    future = model.make_future_dataframe(periods=horizon_days)
+    forecast = model.predict(future)
+
+    fut = forecast.tail(horizon_days)
+    points = [
+        {
+            "ds": ds.strftime("%Y-%m-%d"),
+            "yhat": round(float(yh), 4),
+            "yhat_lower": round(float(lo), 4),
+            "yhat_upper": round(float(hi), 4),
+        }
+        for ds, yh, lo, hi in zip(
+            fut["ds"], fut["yhat"], fut["yhat_lower"], fut["yhat_upper"], strict=True
+        )
+    ]
+    history = [
+        {"ds": ds.strftime("%Y-%m-%d"), "y": round(float(y), 4)}
+        for ds, y in zip(df["ds"], df["y"], strict=True)
+    ]
+    return {
+        "violation_type": violation_type,
+        "history_days": history_days,
+        "horizon_days": horizon_days,
+        "recent_compliance": round(float(df["y"].tail(7).mean()), 4),
+        "summary": _summarize_forecast(df, forecast, violation_type, horizon_days),
+        "history": history,
+        "forecast": points,
+    }
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()

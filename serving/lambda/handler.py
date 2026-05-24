@@ -1,14 +1,20 @@
-"""SafetyVision Mode-2 Lambda handler — FastAPI + Mangum.
+"""SafetyVision Mode-2 Lambda handler -- FastAPI + Mangum.
 
 Full pipeline (option C, ADR-014): image -> YOLOv8s ONNX detection ->
 GradCAM/SHAP explanation -> OSHA-grounded incident report (Gemini Flash
 multimodal via single-node LangGraph) -> full JSON response.
 
-Endpoints (Phase 1):
-    POST /analyze   multipart image (<=6MB Function URL cap) -> full report JSON
-    GET  /docs      Swagger UI (FastAPI auto)
-    GET  /redoc     ReDoc (FastAPI auto)
-    GET  /health    liveness probe
+Endpoints:
+    POST /analyze     multipart image (<=6MB Function URL cap) -> full report JSON
+    GET  /violations  authenticated user's violation history (Supabase, paginated)
+    GET  /forecast    7-day Prophet compliance forecast for a violation type
+    GET  /docs        Swagger UI (FastAPI auto)
+    GET  /redoc       ReDoc (FastAPI auto)
+    GET  /health      liveness probe
+
+Auth: /analyze, /violations, /forecast require an X-API-Key header. Keys are
+provisioned via core.apikeys (Supabase api_keys table) and resolved to a user_id
+per request. /health, /, /docs, /redoc are public.
 
 Image-only by design: Lambda Function URLs cap synchronous payloads at 6MB,
 which rules out video. Video stays on Mode 1 (HF Spaces). See README.
@@ -26,11 +32,20 @@ import uuid
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Header,
+    HTTPException,
+    Query,
+    UploadFile,
+)
 from mangum import Mangum
 
 from agent.graph import run_agent
-from core.detector import PPEDetector, draw_annotations
+from core.apikeys import resolve_user_id
+from core.detector import VIOLATION_CLASSES, PPEDetector, draw_annotations
 from core.explainer import explain_result
 
 logging.basicConfig(level=logging.INFO)
@@ -46,9 +61,21 @@ app = FastAPI(
         "PPE violation detections with bounding boxes, a GradCAM heatmap, a "
         "SHAP attribution map, and an OSHA-grounded incident report written by "
         "Gemini Flash. Image-only (6MB cap); video analysis lives on the HF "
-        "Spaces demo. AI-assisted — human safety-officer review required."
+        "Spaces demo. AI-assisted -- human safety-officer review required."
     ),
 )
+
+
+def require_user_id(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),  # noqa: B008
+) -> str:
+    """Resolve the X-API-Key header to a user_id, or 401 if missing/invalid."""
+    uid = resolve_user_id(x_api_key)
+    if uid is None:
+        raise HTTPException(
+            status_code=401, detail="Missing or invalid API key (X-API-Key)."
+        )
+    return uid
 
 
 def _png_b64(image_bgr: np.ndarray) -> str:
@@ -68,7 +95,15 @@ def root() -> dict:
     return {
         "service": "SafetyVision API",
         "version": "2.0",
-        "endpoints": ["/analyze (POST)", "/docs", "/redoc", "/health"],
+        "endpoints": [
+            "/analyze (POST)",
+            "/violations (GET)",
+            "/forecast (GET)",
+            "/docs",
+            "/redoc",
+            "/health",
+        ],
+        "auth": "X-API-Key header required for /analyze, /violations, /forecast",
         "note": "Image-only (6MB cap). Video -> HF Spaces demo.",
     }
 
@@ -76,13 +111,13 @@ def root() -> dict:
 @app.post("/analyze")
 async def analyze(
     image: UploadFile = File(...),  # noqa: B008
-    user_id: str | None = Form(default=None),  # noqa: B008 — Layer 10: replace with X-API-Key resolution
+    user_id: str = Depends(require_user_id),  # noqa: B008
 ) -> dict:
     """Run the full detection + explanation + incident-report pipeline.
 
-    When user_id is supplied, the inspection + violations persist to Supabase
-    (Mode 3 user history) and the response references the real rows. Layer 10
-    swaps the user_id form field for X-API-Key resolution — this call is unchanged.
+    Authenticated via X-API-Key; the resolved user_id owns the persisted
+    inspection + violations (Mode 3 user history) and the response references
+    the real Supabase rows.
     """
     t0 = time.perf_counter()
 
@@ -104,7 +139,7 @@ async def analyze(
 
     annotated_b64 = _png_b64(draw_annotations(bgr, result))
 
-    # 2) Explanation + 3) incident report — only when there's a violation
+    # 2) Explanation + 3) incident report -- only when there's a violation
     gradcam_b64: str | None = None
     shap_b64: str | None = None
     incident_report: dict | None = None
@@ -119,22 +154,18 @@ async def analyze(
         try:
             agent_out = run_agent(image_bgr=bgr, violation=primary, source="api")
             incident_report = agent_out["incident_report"]
-        except Exception as exc:  # noqa: BLE001 — surface, don't 500 the request
+        except Exception as exc:  # noqa: BLE001 -- surface, don't 500 the request
             logger.exception("agent report failed")
             incident_report = {"error": str(exc)}
 
-    # 4) Persist to Supabase user history when authenticated (Mode 3 / API key).
-    if user_id:
-        try:
-            from core import supabase_db  # lazy — keeps cold start lean
-            inspection_id, vids = supabase_db.persist_inspection_from_result(
-                user_id, result, incident_report, source="api",
-            )
-        except Exception:  # noqa: BLE001 — a log-write must never fail the request
-            logger.exception("supabase persist failed")
-            inspection_id = str(uuid.uuid4())
-            vids = [str(uuid.uuid4()) for _ in result.violations]
-    else:
+    # 4) Persist to Supabase user history (authenticated via API key).
+    try:
+        from core import supabase_db  # lazy -- keeps cold start lean
+        inspection_id, vids = supabase_db.persist_inspection_from_result(
+            user_id, result, incident_report, source="api",
+        )
+    except Exception:  # noqa: BLE001 -- a log-write must never fail the request
+        logger.exception("supabase persist failed")
         inspection_id = str(uuid.uuid4())
         vids = [str(uuid.uuid4()) for _ in result.violations]
 
@@ -159,6 +190,44 @@ async def analyze(
         "pdf_report_url": None,  # Phase 2 (Supabase Storage signed URL)
         "processing_time_ms": round((time.perf_counter() - t0) * 1000, 1),
     }
+
+
+@app.get("/violations")
+def violations_endpoint(
+    user_id: str = Depends(require_user_id),  # noqa: B008
+    limit: int = Query(default=50, ge=1, le=200),  # noqa: B008
+    offset: int = Query(default=0, ge=0),  # noqa: B008
+) -> dict:
+    """Paginated violation history for the authenticated user (newest first)."""
+    from core import supabase_db  # lazy (already loaded via apikeys; cached)
+    rows = supabase_db.fetch_violations(user_id, limit=limit, offset=offset)
+    return {"count": len(rows), "limit": limit, "offset": offset, "violations": rows}
+
+
+@app.get("/forecast")
+def forecast_endpoint(
+    user_id: str = Depends(require_user_id),  # noqa: B008
+    violation_type: str = Query(...),  # noqa: B008
+    days: int = Query(default=30, ge=14, le=90),  # noqa: B008
+    horizon: int = Query(default=7, ge=1, le=30),  # noqa: B008
+) -> dict:
+    """7-day Prophet compliance forecast for one violation type (Supabase per-user)."""
+    if violation_type not in VIOLATION_CLASSES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown violation_type. Valid values: {sorted(VIOLATION_CLASSES)}",
+        )
+    from analytics.forecast import forecast_json  # lazy -- Prophet is heavy
+    try:
+        return forecast_json(
+            violation_type,
+            history_days=days,
+            horizon_days=horizon,
+            source="supabase",
+            user_id=user_id,
+        )
+    except ValueError as exc:  # not enough history to fit
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # Mangum adapts the ASGI app to Lambda (Function URL / API GW v2 events).
