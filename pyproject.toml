@@ -59,6 +59,8 @@ dependencies = [
     # Config
     "python-dotenv>=1.0.0",
     "pydantic>=2.9.0",
+
+    "supabase>=2.30",
 ]
 
 [project.optional-dependencies]

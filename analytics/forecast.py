@@ -35,12 +35,19 @@ def load_compliance_series(
     violation_type: str,
     db_path: Path = DB_PATH,
     days: int = 30,
+    source: str = "sqlite",
+    user_id: str | None = None,
 ) -> pd.DataFrame:
     """Return DataFrame[ds, y] where y = 1 - violations/inspections per day.
 
     Uses LEFT JOIN so days with zero violations of this type still contribute
     (compliance_rate = 1.0 on those days).
     """
+    if source == "supabase":
+        from core import supabase_db  # lazy import — only when Supabase is the source
+        df = supabase_db.fetch_compliance_series(violation_type, days=days, user_id=user_id)
+        df["y"] = df["y"].clip(lower=0.0, upper=1.0)
+        return df
     query = """
         WITH daily_v AS (
             SELECT
@@ -73,13 +80,16 @@ def forecast_compliance(
     db_path: Path = DB_PATH,
     history_days: int = 30,
     horizon_days: int = 7,
+    source: str = "sqlite",
+    user_id: str | None = None,
 ) -> tuple[pd.DataFrame, go.Figure, str]:
     """Fit Prophet, return (full_forecast_df, plotly_figure, plain_language_summary)."""
-    df = load_compliance_series(violation_type, db_path, history_days)
+    df = load_compliance_series(violation_type, db_path, history_days, source=source, user_id=user_id)
     if len(df) < 14:
+        hint = ("python -m analytics.seed_supabase --user-id <uuid>" if source == "supabase"
+                else "python -m analytics.seed_violations")
         raise ValueError(
-            f"Need >=14 days of history for weekly seasonality (got {len(df)}). "
-            "Run `python -m analytics.seed_violations` first."
+            f"Need >=14 days of history for weekly seasonality (got {len(df)}). Run `{hint}` first."
         )
 
     model = Prophet(
@@ -193,11 +203,14 @@ if __name__ == "__main__":
     p.add_argument("violation_type", help="e.g. 'NO-Hardhat'")
     p.add_argument("--days", type=int, default=30)
     p.add_argument("--horizon", type=int, default=7)
+    p.add_argument("--source", default="sqlite", choices=["supabase", "sqlite"])
+    p.add_argument("--user-id", default=None, help="auth.users UUID (Supabase source)")
     p.add_argument("--save", default=None, help="Save plot HTML to this path")
     args = p.parse_args()
 
     forecast, fig, summary = forecast_compliance(
         args.violation_type, history_days=args.days, horizon_days=args.horizon,
+        source=args.source, user_id=args.user_id,
     )
     print(summary, "\n")
     tail = forecast[["ds", "yhat", "yhat_lower", "yhat_upper"]].tail(args.horizon)
