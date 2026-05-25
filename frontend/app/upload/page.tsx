@@ -70,42 +70,42 @@ function Results({ r }: { r: AnalyzeResult }) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader><CardTitle className="text-base">Incident report</CardTitle></CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {ir.error ? (
-            <p className="text-red-600">Report unavailable: {ir.error}</p>
-          ) : (
-            <>
-              {ir.summary && <p>{ir.summary}</p>}
-              {ir.regulation_cited && (
-                <p>
-                  <span className="font-medium">{ir.regulation_cited}</span>
-                  {ir.regulation_text ? ` — ${ir.regulation_text}` : ""}
-                </p>
-              )}
-              {ir.corrective_actions && ir.corrective_actions.length > 0 && (
-                <div>
-                  <p className="font-medium">Corrective actions</p>
-                  <ul className="list-disc pl-5">
-                    {ir.corrective_actions.map((a, i) => <li key={i}>{a}</li>)}
-                  </ul>
-                </div>
-              )}
-              {ir.follow_up_timeline && (
-                <p><span className="font-medium">Follow-up:</span> {ir.follow_up_timeline}</p>
-              )}
-            </>
-          )}
-          {r.pdf_report_url ? (
-            <a href={r.pdf_report_url} target="_blank" rel="noreferrer">
-              <Button variant="outline" size="sm">Download PDF report</Button>
-            </a>
-          ) : (
-            <p className="text-gray-500">PDF is generated for the primary violation only.</p>
-          )}
-        </CardContent>
-      </Card>
+      {ir && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Incident report</CardTitle></CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {ir.error ? (
+              <p className="text-red-600">Report unavailable: {ir.error}</p>
+            ) : (
+              <>
+                {ir.summary && <p>{ir.summary}</p>}
+                {ir.regulation_cited && (
+                  <p>
+                    <span className="font-medium">{ir.regulation_cited}</span>
+                    {ir.regulation_text ? ` — ${ir.regulation_text}` : ""}
+                  </p>
+                )}
+                {ir.corrective_actions && ir.corrective_actions.length > 0 && (
+                  <div>
+                    <p className="font-medium">Corrective actions</p>
+                    <ul className="list-disc pl-5">
+                      {ir.corrective_actions.map((a, i) => <li key={i}>{a}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {ir.follow_up_timeline && (
+                  <p><span className="font-medium">Follow-up:</span> {ir.follow_up_timeline}</p>
+                )}
+              </>
+            )}
+            {r.pdf_report_url && (
+              <a href={r.pdf_report_url} target="_blank" rel="noreferrer">
+                <Button variant="outline" size="sm">Download PDF report</Button>
+              </a>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -122,9 +122,12 @@ export default function UploadPage() {
   }, []);
 
   const tooBig = file ? file.size > MAX_MB * 1024 * 1024 : false;
+  const okType = file
+    ? ["image/jpeg", "image/png"].includes(file.type) || /\.(jpe?g|png)$/i.test(file.name)
+    : true;
 
   async function run() {
-    if (!file || !apiKey) return;
+    if (!file || !apiKey || !okType || tooBig) return;
     setLoading(true);
     setErr(null);
     setResult(null);
@@ -167,9 +170,10 @@ export default function UploadPage() {
             <p className="text-sm text-gray-600">
               {file.name} · {(file.size / 1024 / 1024).toFixed(2)} MB
               {tooBig && <span className="text-red-600"> · over {MAX_MB} MB limit</span>}
+              {!okType && <span className="text-red-600"> · only JPEG/PNG supported</span>}
             </p>
           )}
-          <Button onClick={run} disabled={!file || tooBig || loading}>
+          <Button onClick={run} disabled={!file || tooBig || !okType || loading}>
             {loading ? "Analyzing… (~45–60s)" : "Analyze"}
           </Button>
           {loading && (

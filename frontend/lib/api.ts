@@ -24,7 +24,7 @@ export type AnalyzeResult = {
   annotated_image_b64: string;
   gradcam_b64: string;
   shap_chart_b64: string;
-  incident_report: IncidentReport;
+  incident_report: IncidentReport | null;
   pdf_report_url: string | null;
   processing_time_ms: number;
 };
