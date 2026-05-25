@@ -174,7 +174,8 @@ YOLOv8n test mAP@0.5 = **0.701**, mAP@0.5:0.95 = 0.441. Full v1 per-class metric
 ## Inference performance
 
 - **v2 GPU (L4), per image:** ~7.5 ms inference @ 896, ~3.5 ms @ 640 (plus ~1 ms pre/post)
-- **v2 CPU (AWS Lambda / HF Spaces):** not yet benchmarked — measured during Phase-1 deploy and added here
+- **v2 CPU (AWS Lambda, warm):** ~0.31 s/image server-side detection (`processing_time_ms`); ~0.47 s end-to-end round-trip. Cold start ~34 s on the first request (one-time: container init + heavy ML-stack import + lazy ONNX load); warm invocations stay sub-second.
+- **v2 CPU (HF Spaces):** identical ONNX CPU path; not separately benchmarked.
 - **ONNX files:** `best_640.onnx` 42.7 MB, `best_896.onnx` 42.8 MB (fp32, opset 20, onnxslim 0.1.94, no external-data sidecar)
 - **ONNX @896 sha256:** `b250353639e01800f9cbe79c6002b8b041bdae7560328b8e18ad4a42dc3844e1` (verified deployed HF Spaces artifact)
 
