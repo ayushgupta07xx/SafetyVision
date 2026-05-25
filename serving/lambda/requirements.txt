@@ -33,3 +33,8 @@ huggingface_hub>=0.24.0
 python-dotenv>=1.0.0
 
 supabase>=2.30
+
+# ── Forecasting (Layer 10 /forecast endpoint) ────────────────────────────────
+pandas>=2.0,<3                 # analytics/forecast.py + core/supabase_db.py
+plotly>=5.20.0                 # imported at module top in analytics/forecast.py
+prophet>=1.1.5                 # 7-day compliance forecast (wheel bundles stan)

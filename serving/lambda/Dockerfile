@@ -6,8 +6,12 @@
 # artifact ships untouched. awslambdaric supplies the Lambda runtime bootstrap
 # the AWS base had built in. (ADR-014 / ADR-006 note.)
 #
-# Build from the REPO ROOT (context must see core/ agent/):
-#     docker build -f serving/lambda/Dockerfile -t safetyvision-lambda .
+# Build from the REPO ROOT (context must see core/ agent/ analytics/).
+# --provenance=false --sbom=false: Lambda rejects BuildKit's OCI manifest-list +
+# attestation ("image manifest ... not supported"); these force a single Docker
+# manifest. --platform pins amd64 (Lambda x86_64).
+#     docker build --provenance=false --sbom=false --platform linux/amd64 \
+#       -f serving/lambda/Dockerfile -t safetyvision-lambda .
 # First build ~10-20 min, image ~3-4GB. Do NOT Ctrl+C on pip/layer progress.
 FROM python:3.11-slim
 
@@ -39,11 +43,13 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY serving/lambda/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir awslambdaric -r /tmp/requirements.txt
 
-# 3) App code. handler.py at task root; core/ + agent/ importable via PYTHONPATH.
-#    analytics/ (forecast/Prophet) intentionally omitted — /analyze never calls it.
+# 3) App code. handler.py at task root; core/ + agent/ + analytics/ importable
+#    via PYTHONPATH. analytics/ added in Layer 10 for /forecast (lazy-imports
+#    analytics.forecast -> Prophet); /analyze still never touches it.
 COPY serving/lambda/handler.py ${LAMBDA_TASK_ROOT}/handler.py
-COPY core/  ${LAMBDA_TASK_ROOT}/core/
-COPY agent/ ${LAMBDA_TASK_ROOT}/agent/
+COPY core/      ${LAMBDA_TASK_ROOT}/core/
+COPY agent/     ${LAMBDA_TASK_ROOT}/agent/
+COPY analytics/ ${LAMBDA_TASK_ROOT}/analytics/
 
 # 4) Pre-warm HF cache (public repo, no token). Network at BUILD time only.
 #    Bakes: v2 ONNX (detector), v2 .pt (GradCAM/SHAP), bge-small (RAG embed).
