@@ -13,6 +13,7 @@ CLI (until the Next.js account page exists):
     python -m core.apikeys revoke --key-id  <key-uuid>
 """
 from __future__ import annotations
+
 import argparse
 import hashlib
 import secrets

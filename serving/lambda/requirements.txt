@@ -33,6 +33,7 @@ huggingface_hub>=0.24.0
 python-dotenv>=1.0.0
 
 supabase>=2.30
+reportlab>=4.0
 
 # ── Forecasting (Layer 10 /forecast endpoint) ────────────────────────────────
 pandas>=2.0,<3                 # analytics/forecast.py + core/supabase_db.py

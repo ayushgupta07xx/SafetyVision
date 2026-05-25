@@ -196,3 +196,38 @@ def fetch_violations(user_id: str, limit: int = 50, offset: int = 0) -> list[dic
         .execute()
     )
     return cast("list[dict]", resp.data or [])
+
+# ─── Write: report PDF storage ───────────────────────────────────────────────
+REPORTS_BUCKET = os.getenv("SUPABASE_REPORTS_BUCKET", "reports")
+# Long TTL so stored demo links don't rot; the production-correct pattern is
+# on-read re-signing in Mode-3 (TODO when the frontend lands).
+REPORT_URL_TTL = int(os.getenv("SUPABASE_REPORT_URL_TTL", str(365 * 24 * 3600)))
+
+
+def store_pdf_for_violation(
+    user_id: str, violation_id: str, pdf_bytes: bytes, ttl: int | None = None,
+) -> str | None:
+    """Upload a report PDF to the private `reports` bucket, stamp the signed URL
+    onto violations.pdf_report_url, and return the URL.
+
+    Service-role (bypasses RLS); the object path is namespaced by user_id.
+    """
+    cli = _client()
+    path = f"{user_id}/{violation_id}.pdf"
+    cli.storage.from_(REPORTS_BUCKET).upload(
+        path, pdf_bytes,
+        {"content-type": "application/pdf", "upsert": "true"},
+    )
+    raw: object = cli.storage.from_(REPORTS_BUCKET).create_signed_url(
+        path, ttl or REPORT_URL_TTL
+    )
+    url: str | None = None
+    if isinstance(raw, str):
+        url = raw
+    elif isinstance(raw, dict):
+        url = raw.get("signedURL") or raw.get("signedUrl") or raw.get("signed_url")
+    if url:
+        cli.table("violations").update({"pdf_report_url": url}).eq(
+            "violation_id", violation_id
+        ).execute()
+    return url

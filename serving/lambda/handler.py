@@ -78,11 +78,11 @@ def require_user_id(
     return uid
 
 
-def _png_b64(image_bgr: np.ndarray) -> str:
+def _png_bytes(image_bgr: np.ndarray) -> bytes:
     ok, buf = cv2.imencode(".png", image_bgr)
     if not ok:
         raise RuntimeError("PNG encode failed")
-    return base64.b64encode(buf.tobytes()).decode("ascii")
+    return buf.tobytes()
 
 
 @app.get("/health")
@@ -137,7 +137,8 @@ async def analyze(
     detector = PPEDetector.get()
     result = detector.predict(bgr)
 
-    annotated_b64 = _png_b64(draw_annotations(bgr, result))
+    annotated_png = _png_bytes(draw_annotations(bgr, result))
+    annotated_b64 = base64.b64encode(annotated_png).decode("ascii")
 
     # 2) Explanation + 3) incident report -- only when there's a violation
     gradcam_b64: str | None = None
@@ -158,7 +159,8 @@ async def analyze(
             logger.exception("agent report failed")
             incident_report = {"error": str(exc)}
 
-    # 4) Persist to Supabase user history (authenticated via API key).
+# 4) Persist to Supabase user history (authenticated via API key).
+    persisted = True
     try:
         from core import supabase_db  # lazy -- keeps cold start lean
         inspection_id, vids = supabase_db.persist_inspection_from_result(
@@ -166,8 +168,29 @@ async def analyze(
         )
     except Exception:  # noqa: BLE001 -- a log-write must never fail the request
         logger.exception("supabase persist failed")
+        persisted = False
         inspection_id = str(uuid.uuid4())
         vids = [str(uuid.uuid4()) for _ in result.violations]
+
+    # 5) PDF for the reported (primary) violation -- best-effort, never 500s.
+    pdf_report_url: str | None = None
+    if (
+        persisted
+        and result.violations
+        and isinstance(incident_report, dict)
+        and "error" not in incident_report
+    ):
+        try:
+            primary_idx = max(
+                range(len(result.violations)),
+                key=lambda i: result.violations[i].confidence,
+            )
+            from core.pdf_report import generate_and_store_report
+            pdf_report_url = generate_and_store_report(
+                user_id, vids[primary_idx], incident_report, annotated_png,
+            )
+        except Exception:  # noqa: BLE001
+            logger.exception("pdf report step failed")
 
     violations_json = [
         {
@@ -187,7 +210,7 @@ async def analyze(
         "gradcam_b64": gradcam_b64,
         "shap_chart_b64": shap_b64,
         "incident_report": incident_report,
-        "pdf_report_url": None,  # Phase 2 (Supabase Storage signed URL)
+        "pdf_report_url": pdf_report_url,
         "processing_time_ms": round((time.perf_counter() - t0) * 1000, 1),
     }
 
