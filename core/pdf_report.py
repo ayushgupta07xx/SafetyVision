@@ -10,6 +10,7 @@ before it reaches reportlab's mini-markup parser.
 """
 from __future__ import annotations
 
+import base64
 import logging
 from datetime import UTC, datetime
 from io import BytesIO
@@ -69,6 +70,32 @@ def _esc(text: object) -> str:
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def _b64_png(b64: str | None) -> bytes | None:
+    """Decode a (possibly data-URI) base64 PNG to bytes; None if missing/bad."""
+    if not b64:
+        return None
+    try:
+        s = b64.split(",", 1)[1] if "," in b64 else b64
+        return base64.b64decode(s)
+    except Exception:  # noqa: BLE001 -- explainability images are nice-to-have
+        return None
+
+
+def _scaled_image(png: bytes | None, max_w: float, max_h: float):
+    """Return a width/height-capped reportlab Image, or None if missing/bad."""
+    if not png:
+        return None
+    try:
+        iw, ih = ImageReader(BytesIO(png)).getSize()
+        scale = min(max_w / iw, max_h / ih)
+        img = Image(BytesIO(png), width=iw * scale, height=ih * scale)
+        img.hAlign = "CENTER"
+        return img
+    except Exception:  # noqa: BLE001 -- images are nice-to-have, never fail the PDF
+        logger.warning("image embed failed", exc_info=True)
+        return None
+
+
 def build_incident_pdf(
     report: dict,
     annotated_png: bytes,
@@ -76,8 +103,10 @@ def build_incident_pdf(
     report_id: str,
     generated_at: datetime | None = None,
     subject: str | None = None,
+    gradcam_b64: str | None = None,
+    shap_b64: str | None = None,
 ) -> bytes:
-    """Render a 1-page incident PDF. Returns the PDF as bytes."""
+    """Render the incident PDF (1-2 pages incl. explainability). Returns bytes."""
     ss = _styles()
     when = (generated_at or datetime.now(UTC)).strftime("%Y-%m-%d %H:%M UTC")
     risk = str(report.get("risk_level", "—")).upper()
@@ -130,14 +159,9 @@ def build_incident_pdf(
     story += [title_row, Spacer(1, 8)]
 
     # Annotated image (scaled to content width, capped height)
-    try:
-        iw, ih = ImageReader(BytesIO(annotated_png)).getSize()
-        scale = min(doc.width / iw, (95 * mm) / ih)
-        img = Image(BytesIO(annotated_png), width=iw * scale, height=ih * scale)
-        img.hAlign = "CENTER"
-        story += [img, Spacer(1, 8)]
-    except Exception:  # noqa: BLE001 -- image is nice-to-have, never fail the PDF
-        logger.warning("annotated image embed failed", exc_info=True)
+    ann_img = _scaled_image(annotated_png, doc.width, 95 * mm)
+    if ann_img is not None:
+        story += [ann_img, Spacer(1, 8)]
 
     # Summary
     story += [Paragraph("Summary", ss["SVH"]),
@@ -169,6 +193,30 @@ def build_incident_pdf(
         story += [Paragraph("Image Observations", ss["SVH"]),
                   Paragraph(_esc(report["image_observations"]), ss["SVBody"])]
 
+    # Explainability: GradCAM + SHAP side by side
+    gradcam_png = _b64_png(gradcam_b64)
+    shap_png = _b64_png(shap_b64)
+    if gradcam_png or shap_png:
+        half = (doc.width - 6 * mm) / 2
+        g_img = _scaled_image(gradcam_png, half, 70 * mm)
+        s_img = _scaled_image(shap_png, half, 70 * mm)
+        if g_img is not None or s_img is not None:
+            cap = ss["SVSmall"]
+            grid = Table(
+                [[g_img or Paragraph("GradCAM unavailable", cap),
+                  s_img or Paragraph("SHAP unavailable", cap)],
+                 [Paragraph("GradCAM — model attention heatmap", cap),
+                  Paragraph("SHAP — pixel attribution", cap)]],
+                colWidths=[half, half],
+            )
+            grid.setStyle(TableStyle([
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("TOPPADDING", (0, 0), (-1, -1), 2),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ]))
+            story += [Paragraph("Explainability", ss["SVH"]), grid, Spacer(1, 4)]
+
     # Footer: disclaimer, model card link, signature line
     story += [Spacer(1, 12), HRFlowable(width="100%", color=colors.HexColor("#cbd5e1")),
               Spacer(1, 4), Paragraph(_DISCLAIMER, ss["SVSmall"]),
@@ -190,6 +238,8 @@ def generate_and_store_report(
     annotated_png: bytes,
     *,
     generated_at: datetime | None = None,
+    gradcam_b64: str | None = None,
+    shap_b64: str | None = None,
 ) -> str | None:
     """Build the PDF and store it in Supabase. Best-effort: returns the signed
     URL, or None if anything fails (never raises into the request path)."""
@@ -197,6 +247,7 @@ def generate_and_store_report(
         pdf = build_incident_pdf(
             report, annotated_png,
             report_id=violation_id, generated_at=generated_at, subject=user_id,
+            gradcam_b64=gradcam_b64, shap_b64=shap_b64,
         )
     except Exception:  # noqa: BLE001
         logger.exception("PDF build failed for %s", violation_id)

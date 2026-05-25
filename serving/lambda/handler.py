@@ -187,7 +187,7 @@ async def analyze(
             )
             from core.pdf_report import generate_and_store_report
             pdf_report_url = generate_and_store_report(
-                user_id, vids[primary_idx], incident_report, annotated_png,
+                user_id, vids[primary_idx], incident_report, annotated_png,gradcam_b64=gradcam_b64, shap_b64=shap_b64,
             )
         except Exception:  # noqa: BLE001
             logger.exception("pdf report step failed")
