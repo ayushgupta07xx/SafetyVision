@@ -1,101 +1,110 @@
-"""Seed synthetic inspection + violation history into Supabase for the forecast demo.
+#!/usr/bin/env python3
+"""Seed synthetic Supabase history for one user so Mode-3 /forecast has >=14
+days of data for Prophet. Each violation type gets a distinct base rate + trend
+(improving / declining / flat) so the dashboard shows variety. Inspections marked
+image_url='synthetic://seed', violations source='synthetic' -> reruns idempotent.
 
-violations.user_id is a FK to auth.users, so you need a REAL auth user UUID first:
-    Supabase dashboard -> Authentication -> Users -> Add user (email + password)
-    -> copy the user's UID.
-
-Usage (WSL, ~/safetyvision, venv active):
-    python -m analytics.seed_supabase --user-id <auth-user-uuid> --days 35 --reset
-
-Deterministic (seed=42). Compliance improves across the window so the 7-day
-forecast shows a visible upward trend. Violation types and risk levels are pulled
-from core.detector.RISK_LEVELS -- the single source of truth -- so they can never
-drift from what the detector actually logs as violation.type.
+  EMAIL=khsfkvbhjsd@gmail.com python analytics/seed_supabase.py
+Needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in .env (service role bypasses RLS).
 """
-from __future__ import annotations
-
-import argparse
+import os
 import random
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
-from core import supabase_db
-from core.detector import RISK_LEVELS
+from dotenv import load_dotenv
 
-# All real v2 violation classes, straight from the detector. No local list to drift.
-VIOLATION_TYPES: list[str] = list(RISK_LEVELS.keys())
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-# Per-class base appearance probability (demo tuning only -- not a detector concern).
-# Unknown/new classes fall back to 0.15 so adding a detector class never KeyErrors.
-BASE_RATE: dict[str, float] = {
-    "Fall-Detected": 0.04,
-    "No_Harness": 0.08,
-    "NO-Hardhat": 0.35,
-    "NO-Safety Vest": 0.25,
-    "NO-Goggles": 0.18,
-    "NO-Mask": 0.15,
-    "NO-Gloves": 0.20,
+from supabase import create_client  # noqa: E402
+from core.detector import RISK_LEVELS  # noqa: E402  derive types+levels, don't hardcode
+
+DAYS = int(os.environ.get("DAYS", "30"))
+SENTINEL = "synthetic://seed"
+random.seed(42)
+
+# Per-type (base per-inspection violation prob, trend). Keyed by RISK_LEVELS names;
+# unlisted types fall back to DEFAULT. violation_type written still comes from RISK_LEVELS.
+DEFAULT = (0.20, "flat")
+PROFILE = {
+    "NO-Hardhat":     (0.35, "improving"),
+    "No_Harness":     (0.15, "declining"),   # critical -> show it worsening
+    "NO-Safety Vest": (0.30, "improving"),
+    "NO-Goggles":     (0.20, "flat"),
+    "NO-Mask":        (0.10, "flat"),
+    "NO-Gloves":      (0.40, "improving"),
+    "Fall-Detected":  (0.05, "flat"),
 }
 
 
-def _reset(user_id: str) -> None:
-    """Delete this user's existing rows (violations before inspections, FK order)."""
-    cli = supabase_db._client()
-    cli.table("violations").delete().eq("user_id", user_id).execute()
-    cli.table("inspections").delete().eq("user_id", user_id).execute()
-    print(f"Reset: cleared existing inspections + violations for user {user_id}")
+def prob(base: float, trend: str, d: int) -> float:
+    f = d / max(DAYS - 1, 1)
+    if trend == "improving":
+        return base * (1.0 - 0.7 * f)
+    if trend == "declining":
+        return base * (1.0 + 1.2 * f)
+    return base
 
 
-def seed(user_id: str, days: int = 35, seed_val: int = 42) -> None:
-    random.seed(seed_val)
-    now = datetime.now(UTC)
-    insp_rows: list[dict] = []
-    viol_rows: list[dict] = []
-    for d in range(days, 0, -1):
-        day = now - timedelta(days=d)
-        progress = (days - d) / days          # 0 -> 1 across the window
-        for _ in range(random.randint(8, 16)):  # inspections that day
-            insp_id = str(uuid.uuid4())
-            stamp = day + timedelta(minutes=random.randint(0, 600))
-            todays = [
-                vt for vt in VIOLATION_TYPES
-                if random.random() < BASE_RATE.get(vt, 0.15) * (1 - 0.5 * progress)
-            ]
-            insp_rows.append({
+sb = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_ROLE_KEY"])
+
+user_id = os.environ.get("USER_ID")
+if not user_id:
+    email = os.environ.get("EMAIL", "").lower()
+    if not email:
+        raise SystemExit("Set EMAIL or USER_ID env var")
+    users = sb.auth.admin.list_users()
+    user_id = next((u.id for u in users if (u.email or "").lower() == email), None)
+    if not user_id:
+        raise SystemExit(f"No user with email {email}")
+print("Seeding user_id:", user_id)
+
+TYPES = list(RISK_LEVELS.keys())
+
+sb.table("violations").delete().eq("user_id", user_id).eq("source", "synthetic").execute()
+sb.table("inspections").delete().eq("user_id", user_id).eq("image_url", SENTINEL).execute()
+print("Cleared prior synthetic rows.")
+
+now = datetime.now(timezone.utc)
+inspections, violations = [], []
+
+for d in range(DAYS):
+    day = now - timedelta(days=(DAYS - 1 - d))
+    for _ in range(random.randint(3, 6)):
+        insp_id = str(uuid.uuid4())
+        ts = day.replace(hour=random.randint(7, 18), minute=random.randint(0, 59),
+                         second=random.randint(0, 59), microsecond=random.randint(1, 999999))
+        ts_ms = int(ts.timestamp() * 1000)
+        hit = []
+        for vt in TYPES:
+            base, trend = PROFILE.get(vt, DEFAULT)
+            if random.random() < prob(base, trend, d):
+                hit.append(vt)
+        for vt in hit:
+            violations.append({
+                "violation_id": str(uuid.uuid4()),
                 "inspection_id": insp_id,
                 "user_id": user_id,
-                "uploaded_at": stamp.isoformat(),
-                "source_type": "image",
-                "total_detections": len(todays) + random.randint(1, 3),
-                "total_violations": len(todays),
+                "timestamp_ms": ts_ms,
+                "violation_type": vt,
+                "risk_level": RISK_LEVELS[vt],
+                "confidence": round(random.uniform(0.45, 0.95), 3),
+                "source": "synthetic",
             })
-            for vt in todays:
-                viol_rows.append({
-                    "violation_id": str(uuid.uuid4()),
-                    "inspection_id": insp_id,
-                    "user_id": user_id,
-                    "timestamp_ms": int(stamp.timestamp() * 1000),
-                    "violation_type": vt,
-                    "risk_level": RISK_LEVELS[vt],
-                    "confidence": round(random.uniform(0.5, 0.95), 3),
-                    "source": "synthetic",
-                })
-    cli = supabase_db._client()
-    for i in range(0, len(insp_rows), 200):
-        cli.table("inspections").insert(insp_rows[i:i + 200]).execute()
-    for i in range(0, len(viol_rows), 200):
-        cli.table("violations").insert(viol_rows[i:i + 200]).execute()
-    print(f"Seeded {len(insp_rows)} inspections + {len(viol_rows)} violations "
-          f"across {days} days for user {user_id}")
+        inspections.append({
+            "inspection_id": insp_id,
+            "user_id": user_id,
+            "uploaded_at": ts.isoformat(),
+            "source_type": "api",
+            "image_url": SENTINEL,
+            "total_detections": len(hit) + random.randint(1, 3),
+            "total_violations": len(hit),
+        })
 
+sb.table("inspections").insert(inspections).execute()
+if violations:
+    sb.table("violations").insert(violations).execute()
 
-if __name__ == "__main__":
-    p = argparse.ArgumentParser()
-    p.add_argument("--user-id", required=True, help="auth.users UUID (from dashboard)")
-    p.add_argument("--days", type=int, default=35)
-    p.add_argument("--reset", action="store_true",
-                   help="delete this user's existing rows before seeding (idempotent re-seed)")
-    args = p.parse_args()
-    if args.reset:
-        _reset(args.user_id)
-    seed(args.user_id, args.days)
+print(f"Inserted {len(inspections)} inspections, {len(violations)} violations over {DAYS} days.")
+print("Profiles:", {vt: PROFILE.get(vt, DEFAULT) for vt in TYPES})

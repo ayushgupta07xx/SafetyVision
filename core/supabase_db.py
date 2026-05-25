@@ -67,7 +67,7 @@ def fetch_compliance_series(
     if insp.empty:
         return pd.DataFrame(columns=["ds", "y"])
 
-    insp["d"] = pd.to_datetime(insp["uploaded_at"], utc=True).dt.normalize()
+    insp["d"] = pd.to_datetime(insp["uploaded_at"], utc=True, format="ISO8601").dt.normalize()
     daily = insp.groupby("d").size().rename("total").reset_index()
 
     if viol.empty:
