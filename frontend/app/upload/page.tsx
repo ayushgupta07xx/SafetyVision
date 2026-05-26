@@ -166,6 +166,17 @@ export default function UploadPage() {
             onChange={(e) => { setFile(e.target.files?.[0] ?? null); setResult(null); setErr(null); }}
             className="block text-sm"
           />
+          <p className="mt-2 text-sm text-gray-500">
+            Images only here (6MB limit).{" "}
+            
+              href="https://huggingface.co/spaces/ayushgupta7777/safetyvision"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-700 underline"
+            >
+              Need video? Try the open-source demo &rarr;
+            </a>
+          </p>
           {file && (
             <p className="text-sm text-gray-600">
               {file.name} · {(file.size / 1024 / 1024).toFixed(2)} MB
