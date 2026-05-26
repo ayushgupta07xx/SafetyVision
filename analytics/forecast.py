@@ -111,27 +111,26 @@ def _summarize_forecast(
     history: pd.DataFrame, forecast: pd.DataFrame, vtype: str, horizon_days: int
 ) -> str:
     """One-line plain-language takeaway for non-technical readers."""
-    recent = float(history["y"].tail(7).mean()) * 100
+    def _clamp(x: float) -> float:
+        return min(100.0, max(0.0, x))
+    recent = _clamp(float(history["y"].tail(7).mean()) * 100)
     fut = forecast.tail(horizon_days)
-    proj_end = float(fut["yhat"].iloc[-1]) * 100
-    delta = float(fut["yhat"].mean()) * 100 - recent
+    proj_end = _clamp(float(fut["yhat"].iloc[-1]) * 100)
+    delta = _clamp(float(fut["yhat"].mean()) * 100) - recent
     if delta > 2:
-        trend = "trending **up**"
+        trend = "trending up"
     elif delta < -2:
-        trend = "trending **down**"
+        trend = "trending down"
     else:
-        trend = "**roughly stable**"
+        trend = "roughly stable"
     end_date = fut["ds"].iloc[-1].strftime("%b %d").replace(" 0", " ")
     return (
-        f"### {vtype}\n"
-        f"Recent compliance averaged **{recent:.0f}%** over the last 7 days. "
-        f"The 7-day forecast is {trend}, with about **{proj_end:.0f}%** projected by {end_date}.\n\n"
-        f"_Compliance rate = the share of checks where the required PPE **was** present — "
-        f"higher is better. Dots = the past 30 days; line = the Prophet forecast; "
-        f"shaded band = the 80% uncertainty range._"
+        f"Recent compliance averaged {recent:.0f}% over the last 7 days. "
+        f"The 7-day forecast is {trend}, with about {proj_end:.0f}% projected by {end_date}. "
+        f"Compliance rate = the share of checks where the required PPE was present "
+        f"(higher is better). Dots = the past 30 days; line = the Prophet forecast; "
+        f"shaded band = the 80% uncertainty range."
     )
-
-
 def _plot_forecast(history: pd.DataFrame, forecast: pd.DataFrame, vtype: str) -> go.Figure:
     split = history["ds"].max()      # last actual day; forecast begins after this
     last = forecast["ds"].max()
