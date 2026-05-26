@@ -168,14 +168,7 @@ export default function UploadPage() {
           />
           <p className="mt-2 text-sm text-gray-500">
             Images only here (6MB limit).{" "}
-            
-              href="https://huggingface.co/spaces/ayushgupta7777/safetyvision"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-teal-700 underline"
-            >
-              Need video? Try the open-source demo &rarr;
-            </a>
+            <a href="https://huggingface.co/spaces/ayushgupta7777/safetyvision" target="_blank" rel="noopener noreferrer" className="text-teal-700 underline">Need video? Try the open-source demo &rarr;</a>
           </p>
           {file && (
             <p className="text-sm text-gray-600">
