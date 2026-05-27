@@ -78,11 +78,22 @@ def require_user_id(
     return uid
 
 
-def _png_bytes(image_bgr: np.ndarray) -> bytes:
-    ok, buf = cv2.imencode(".png", image_bgr)
+MAX_INPUT_DIM = 1280  # cap longest side post-decode to bound response size
+
+def _jpeg_bytes(image_bgr, quality: int = 85) -> bytes:
+    ok, buf = cv2.imencode(".jpg", image_bgr, [cv2.IMWRITE_JPEG_QUALITY, quality])
     if not ok:
-        raise RuntimeError("PNG encode failed")
+        raise RuntimeError("JPEG encode failed")
     return buf.tobytes()
+
+def _cap_resolution(bgr):
+    """Downscale so longest side <= MAX_INPUT_DIM; pass through if smaller."""
+    h, w = bgr.shape[:2]
+    longest = max(h, w)
+    if longest <= MAX_INPUT_DIM:
+        return bgr
+    scale = MAX_INPUT_DIM / longest
+    return cv2.resize(bgr, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
 
 
 @app.get("/health")
@@ -132,13 +143,14 @@ async def analyze(
     bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
     if bgr is None:
         raise HTTPException(status_code=400, detail="Could not decode image.")
+    bgr = _cap_resolution(bgr)
 
     # 1) Detection (singleton reused across warm invocations)
     detector = PPEDetector.get()
     result = detector.predict(bgr)
 
-    annotated_png = _png_bytes(draw_annotations(bgr, result))
-    annotated_b64 = base64.b64encode(annotated_png).decode("ascii")
+    annotated_jpeg = _jpeg_bytes(draw_annotations(bgr, result))
+    annotated_b64 = base64.b64encode(annotated_jpeg).decode("ascii")
 
     # 2) Explanation + 3) incident report -- only when there's a violation
     gradcam_b64: str | None = None
@@ -187,7 +199,7 @@ async def analyze(
             )
             from core.pdf_report import generate_and_store_report
             pdf_report_url = generate_and_store_report(
-                user_id, vids[primary_idx], incident_report, annotated_png,gradcam_b64=gradcam_b64, shap_b64=shap_b64,
+                user_id, vids[primary_idx], incident_report, annotated_jpeg,gradcam_b64=gradcam_b64, shap_b64=shap_b64,
             )
         except Exception:  # noqa: BLE001
             logger.exception("pdf report step failed")

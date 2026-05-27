@@ -203,16 +203,21 @@ def _heatmap_overlay(
 
 
 def _png_b64(rgb_uint8: np.ndarray) -> str:
+    # Name kept for caller compatibility; encodes JPEG to keep base64 payload
+    # under the Lambda Function URL 6MB response cap.
     bgr = cv2.cvtColor(rgb_uint8, cv2.COLOR_RGB2BGR)
-    ok, buf = cv2.imencode(".png", bgr)
+    ok, buf = cv2.imencode(".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, 85])
     if not ok:
-        raise RuntimeError("Failed to encode PNG")
+        raise RuntimeError("Failed to encode JPEG")
     return base64.b64encode(buf.tobytes()).decode("ascii")
 
 
 def _fig_to_b64(fig) -> str:
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", bbox_inches="tight", dpi=90)
+    # JPEG (not PNG) keeps the SHAP figure small enough to fit the Lambda 6MB
+    # response cap; matplotlib uses Pillow for JPEG export. facecolor explicit
+    # because JPEG has no alpha channel.
+    fig.savefig(buf, format="jpeg", bbox_inches="tight", dpi=90, facecolor="white")
     plt.close(fig)
     buf.seek(0)
     return base64.b64encode(buf.read()).decode("ascii")

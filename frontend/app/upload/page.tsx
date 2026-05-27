@@ -9,7 +9,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RiskBadge } from "@/components/risk-badge";
 import { Analyzing } from "@/components/analyzing";
 
-const MAX_MB = 6;
+const MAX_MB = 4;
+
+function mapError(err: string): string {
+  console.error("[upload] raw error:", err);
+  const m = err.match(/Analyze failed \((\d+)\)/);
+  if (m) {
+    const s = parseInt(m[1], 10);
+    if (s === 400) return "Couldn't decode that image. Try a different JPEG or PNG.";
+    if (s === 401) return "API key invalid or revoked. Mint a new one on the Account page.";
+    if (s === 403) return "Request blocked (likely CORS or revoked permission). Check console.";
+    if (s === 413) return "Image too large for the server — try a file under 4MB.";
+    if (s === 429) return "Rate limit hit. Wait a moment and try again.";
+    if (s >= 500 && s < 600) return "Server error (cold start or response too large). Retry in ~10s.";
+    return `Unexpected response (${s}). Check console for details.`;
+  }
+  if (err.includes("Failed to fetch") || err.includes("NetworkError")) {
+    return "Couldn't reach the server (network or CORS issue). Check console for details.";
+  }
+  return "Something went wrong. Check console for details.";
+}
 
 function Img({ b64, alt }: { b64: string; alt: string }) {
   if (!b64) return <p className="p-4 text-sm text-muted-foreground">Not available.</p>;
@@ -153,7 +172,7 @@ export default function UploadPage() {
           className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-lg file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:opacity-90"
         />
         <p className="mt-3 text-sm text-muted-foreground">
-          Images only here (6MB limit).{" "}
+          Images only here (4MB limit).{" "}
           <a href="https://huggingface.co/spaces/ayushgupta7777/safetyvision" target="_blank" rel="noopener noreferrer" className="text-primary underline">Need video? Try the open-source demo &rarr;</a>
         </p>
         {file && (
@@ -167,7 +186,7 @@ export default function UploadPage() {
           {loading ? "Analyzing…" : "Analyze"}
         </Button>
         {loading && <Analyzing />}
-        {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
+        {err && <p className="mt-3 text-sm text-red-600">{mapError(err)}</p>}
       </div>
 
       {result && <Results r={result} />}
