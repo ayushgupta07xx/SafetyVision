@@ -7,7 +7,6 @@ import {
 } from "recharts";
 import { SV_KEY_STORAGE } from "@/lib/keys";
 import { getForecast, VIOLATION_TYPES, type ForecastResult } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -17,6 +16,7 @@ type Row = { ds: string; actual: number | null; predicted: number | null; band: 
 const pct = (v: number) => `${(v * 100).toFixed(0)}%`;
 const mmdd = (ds: string) => ds.slice(5);
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
+const TEAL = "#0d9488";
 
 function toRows(data: ForecastResult): Row[] {
   const rows: Row[] = [
@@ -62,9 +62,12 @@ export default function ForecastPage() {
   const interval = rows.length > 16 ? Math.floor(rows.length / 8) : 0;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <h1 className="text-2xl font-semibold">Compliance Forecast</h1>
+    <main className="mx-auto max-w-5xl px-6 py-12">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Forecast</p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight">Compliance forecast</h1>
+        </div>
         <Select value={vt} onValueChange={setVt}>
           <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -76,65 +79,55 @@ export default function ForecastPage() {
       </div>
 
       {!apiKey && (
-        <Card><CardContent className="py-8 text-center text-muted-foreground">
-          No API key found. Mint one on the{" "}
-          <Link href="/account" className="underline">Account</Link> page first.
-        </CardContent></Card>
+        <div className="mt-8 rounded-xl border border-border bg-card p-10 text-center text-muted-foreground">
+          No API key found. Mint one on the <Link href="/account" className="text-primary underline">Account</Link> page first.
+        </div>
       )}
 
       {apiKey && loading && (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">Loading forecast...</CardContent></Card>
+        <div className="mt-8 rounded-xl border border-border bg-card p-12 text-center text-muted-foreground">Loading forecast...</div>
       )}
 
       {apiKey && !loading && error && (
-        <Card><CardContent className="py-8 text-center text-muted-foreground">
+        <div className="mt-8 rounded-xl border border-border bg-card p-10 text-center text-muted-foreground">
           {error.startsWith("422")
             ? "Not enough history yet - Prophet needs at least 14 days of inspections for this violation type."
             : `Forecast failed - ${error}`}
-        </CardContent></Card>
+        </div>
       )}
 
       {apiKey && !loading && !error && data && (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">
-                {data.violation_type} - recent compliance {pct(data.recent_compliance)}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{data.summary}</p>
-            </CardContent>
-          </Card>
+        <div className="mt-8 space-y-6">
+          <div className="rounded-xl border border-border bg-card p-6">
+            <p className="text-sm font-medium">{data.violation_type} &middot; recent compliance <span className="font-mono text-primary">{pct(data.recent_compliance)}</span></p>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{data.summary}</p>
+          </div>
 
-          <Card>
-            <CardHeader><CardTitle className="text-base">
-              {data.history_days}-day history + {data.horizon_days}-day forecast (80% CI)
-            </CardTitle></CardHeader>
-            <CardContent>
-              <div style={{ width: "100%", height: 360 }}>
-                <ResponsiveContainer>
-                  <ComposedChart data={rows} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis dataKey="ds" tickFormatter={mmdd} interval={interval} fontSize={11} />
-                    <YAxis domain={[0, 1]} ticks={[0, 0.25, 0.5, 0.75, 1]} tickFormatter={pct} fontSize={11} width={42} allowDataOverflow />
-                    <Tooltip
-                      formatter={(value: unknown, name) => {
-                        if (Array.isArray(value)) return [`${pct(value[0])} - ${pct(value[1])}`, "80% CI"];
-                        return [pct(value as number), name];
-                      }}
-                    />
-                    <Legend />
-                    <Area dataKey="band" name="80% CI" stroke="none" fill="#2563eb" fillOpacity={0.15} connectNulls />
-                    <Line dataKey="actual" name="Compliance" stroke="#0d9488" dot={false} strokeWidth={2} connectNulls />
-                    <Line dataKey="predicted" name="Forecast" stroke="#16a34a" strokeDasharray="5 4" dot={false} strokeWidth={2} connectNulls />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </>
+          <div className="rounded-xl border border-border bg-card p-6">
+            <p className="text-sm font-medium">{data.history_days}-day history + {data.horizon_days}-day forecast (80% CI)</p>
+            <div className="mt-5 text-muted-foreground" style={{ width: "100%", height: 360 }}>
+              <ResponsiveContainer>
+                <ComposedChart data={rows} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.15} />
+                  <XAxis dataKey="ds" tickFormatter={mmdd} interval={interval} tick={{ fill: "currentColor", fontSize: 11 }} stroke="currentColor" />
+                  <YAxis domain={[0, 1]} ticks={[0, 0.25, 0.5, 0.75, 1]} tickFormatter={pct} tick={{ fill: "currentColor", fontSize: 11 }} stroke="currentColor" width={42} allowDataOverflow />
+                  <Tooltip
+                    contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--foreground)" }}
+                    formatter={(value: unknown, name) => {
+                      if (Array.isArray(value)) return [`${pct(value[0])} - ${pct(value[1])}`, "80% CI"];
+                      return [pct(value as number), name];
+                    }}
+                  />
+                  <Legend />
+                  <Area dataKey="band" name="80% CI" stroke="none" fill={TEAL} fillOpacity={0.12} connectNulls />
+                  <Line dataKey="actual" name="Compliance" stroke={TEAL} dot={false} strokeWidth={2} connectNulls />
+                  <Line dataKey="predicted" name="Forecast" stroke={TEAL} strokeDasharray="5 4" dot={false} strokeWidth={2} connectNulls />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
+    </main>
   );
 }
