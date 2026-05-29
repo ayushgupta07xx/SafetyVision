@@ -21,7 +21,7 @@ export default async function Nav() {
               <Link href="/history" className={link}>History</Link>
               <Link href="/forecast" className={link}>Forecast</Link>
               <Link href="/account" className={link}>Account</Link>
-              <ThemeToggle />
+              <ThemeToggle hint />
               <form action="/auth/signout" method="post">
                 <button className="rounded-md border border-border px-3 py-1.5 font-medium transition-all duration-150 hover:bg-accent active:scale-[0.97]">Sign out</button>
               </form>

@@ -204,6 +204,21 @@ REPORTS_BUCKET = os.getenv("SUPABASE_REPORTS_BUCKET", "reports")
 REPORT_URL_TTL = int(os.getenv("SUPABASE_REPORT_URL_TTL", str(365 * 24 * 3600)))
 
 
+@lru_cache(maxsize=512)
+def get_user_label(user_id: str) -> str:
+    """Best-effort label for the PDF Subject field: email if we can fetch it
+    from Supabase Auth, else a short UUID prefix. Cached per container.
+    Never raises."""
+    try:
+        res = _client().auth.admin.get_user_by_id(user_id)
+        email = getattr(getattr(res, "user", None), "email", None)
+        if email:
+            return str(email)
+    except Exception:  # noqa: BLE001 -- best-effort cosmetic lookup
+        pass
+    return f"user-{user_id[:8]}"
+
+
 def store_pdf_for_violation(
     user_id: str, violation_id: str, pdf_bytes: bytes, ttl: int | None = None,
 ) -> str | None:

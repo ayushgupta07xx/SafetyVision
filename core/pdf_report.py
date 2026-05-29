@@ -244,9 +244,14 @@ def generate_and_store_report(
     """Build the PDF and store it in Supabase. Best-effort: returns the signed
     URL, or None if anything fails (never raises into the request path)."""
     try:
+        from core.supabase_db import get_user_label
+        subject = get_user_label(user_id)
+    except Exception:  # noqa: BLE001
+        subject = f"user-{user_id[:8]}"
+    try:
         pdf = build_incident_pdf(
             report, annotated_png,
-            report_id=violation_id, generated_at=generated_at, subject=user_id,
+            report_id=violation_id, generated_at=generated_at, subject=subject,
             gradcam_b64=gradcam_b64, shap_b64=shap_b64,
         )
     except Exception:  # noqa: BLE001

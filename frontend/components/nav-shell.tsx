@@ -1,7 +1,5 @@
 "use client";
-
 import { useEffect, useState, type ReactNode } from "react";
-
 export function NavShell({ children }: { children: ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -12,7 +10,7 @@ export function NavShell({ children }: { children: ReactNode }) {
   }, []);
   return (
     <header
-      className={`sticky top-0 z-40 bg-background transition-[border-color,box-shadow] duration-200 ${
+      className={`sticky top-0 z-40 bg-[color-mix(in_oklch,var(--background)_60%,transparent)] backdrop-blur-md transition-[border-color,box-shadow] duration-200 ${
         scrolled ? "border-b border-border shadow-sm" : "border-b border-transparent"
       }`}
     >

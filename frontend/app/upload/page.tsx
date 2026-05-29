@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { analyzeImage, type AnalyzeResult } from "@/lib/api";
 import { SV_KEY_STORAGE } from "@/lib/keys";
 import { Button } from "@/components/ui/button";
