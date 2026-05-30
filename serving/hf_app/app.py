@@ -337,8 +337,59 @@ See the GitHub repo for the `terraform apply` walkthrough.
 License: **AGPL-3.0** (inherited from Ultralytics YOLOv8).
 """
 
-with gr.Blocks(title="SafetyVision — AI Workplace Safety Monitor") as demo:
-    gr.Markdown(_HEADER)
+# ---------------------------------------------------------------------------
+# Theme + branding to match the SafetyVision web app (dark + teal).
+# Colors mirror frontend/app/globals.css (.dark tokens).
+# ---------------------------------------------------------------------------
+_THEME = gr.themes.Base(
+    primary_hue=gr.themes.colors.emerald,
+    secondary_hue=gr.themes.colors.emerald,
+    neutral_hue=gr.themes.colors.stone,
+    font=[gr.themes.GoogleFont("Inter"), "system-ui", "sans-serif"],
+    font_mono=[gr.themes.GoogleFont("JetBrains Mono"), "ui-monospace", "monospace"],
+).set(
+    body_background_fill="#100f0d", body_background_fill_dark="#100f0d",
+    body_text_color="#f3f1ea", body_text_color_dark="#f3f1ea",
+    body_text_color_subdued="#a8a49a", body_text_color_subdued_dark="#a8a49a",
+    background_fill_primary="#100f0d", background_fill_primary_dark="#100f0d",
+    background_fill_secondary="#1a1815", background_fill_secondary_dark="#1a1815",
+    block_background_fill="#1a1815", block_background_fill_dark="#1a1815",
+    block_border_color="#2b2824", block_border_color_dark="#2b2824",
+    border_color_primary="#2b2824", border_color_primary_dark="#2b2824",
+    block_label_text_color="#a8a49a", block_label_text_color_dark="#a8a49a",
+    block_title_text_color="#f3f1ea", block_title_text_color_dark="#f3f1ea",
+    block_radius="14px", input_radius="10px",
+    button_large_radius="10px", button_small_radius="8px",
+    input_background_fill="#100f0d", input_background_fill_dark="#100f0d",
+    input_border_color="#2b2824", input_border_color_dark="#2b2824",
+    button_primary_background_fill="#1f9e84", button_primary_background_fill_dark="#1f9e84",
+    button_primary_background_fill_hover="#26b89a", button_primary_background_fill_hover_dark="#26b89a",
+    button_primary_text_color="#04201a", button_primary_text_color_dark="#04201a",
+    button_primary_border_color="#1f9e84", button_primary_border_color_dark="#1f9e84",
+    button_secondary_background_fill="#242220", button_secondary_background_fill_dark="#242220",
+    button_secondary_text_color="#f3f1ea", button_secondary_text_color_dark="#f3f1ea",
+    button_secondary_border_color="#2b2824", button_secondary_border_color_dark="#2b2824",
+    link_text_color="#7fe0cb", link_text_color_dark="#7fe0cb",
+    link_text_color_hover="#a6ecdb", link_text_color_hover_dark="#a6ecdb",
+)
+
+_CSS = """
+.gradio-container { max-width: 1100px !important; margin: 0 auto !important; }
+.sv-hero { text-align: center; padding: 26px 12px 6px; }
+.sv-eyebrow { color: #1f9e84; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.sv-brand { font-size: 34px; font-weight: 800; letter-spacing: -.02em; margin-top: 8px; color: #f3f1ea; }
+.sv-brand span { color: #1f9e84; }
+.sv-sub { color: #a8a49a; font-weight: 600; margin-top: 6px; font-size: 14px; }
+.sv-desc { color: #a8a49a; max-width: 640px; margin: 12px auto 0; line-height: 1.55; font-size: 14px; }
+.tab-nav button.selected { color: #1f9e84 !important; }
+footer { display: none !important; }
+"""
+
+_HERO_HTML = '<div class="sv-hero"><div class="sv-eyebrow">Open-source workplace safety</div><div class="sv-brand">&#129466; Safety<span>Vision</span></div><div class="sv-sub">AI-powered PPE compliance monitor &middot; Free &middot; No signup &middot; Self-hostable</div><p class="sv-desc">Upload a worksite photo or short clip and get bounding boxes, a GradCAM heatmap, SHAP attribution, an OSHA-grounded incident report (Gemini Flash multimodal), and a 7-day compliance forecast (Prophet).</p></div>'
+
+
+with gr.Blocks(title="SafetyVision — AI Workplace Safety Monitor", theme=_THEME, css=_CSS) as demo:
+    gr.HTML(_HERO_HTML)
 
     with gr.Tab("🔍 Analyze"):
         with gr.Row():
@@ -395,4 +446,4 @@ with gr.Blocks(title="SafetyVision — AI Workplace Safety Monitor") as demo:
 
 
 if __name__ == "__main__":
-    demo.queue(max_size=10).launch(server_name="0.0.0.0", theme=gr.themes.Soft())
+    demo.queue(max_size=10).launch(server_name="0.0.0.0")
