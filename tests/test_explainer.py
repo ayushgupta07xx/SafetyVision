@@ -136,7 +136,7 @@ class TestPngB64:
         b64 = _png_b64(img)
         assert isinstance(b64, str)
         raw = base64.b64decode(b64)
-        assert raw[:8] == b"\x89PNG\r\n\x1a\n"
+        assert raw[:3] == b"\xff\xd8\xff"
 
     def test_roundtrip_preserves_shape(self):
         img = np.array([[[0, 0, 255], [0, 255, 0]],
@@ -151,7 +151,7 @@ class TestPngB64:
         import cv2
         monkeypatch.setattr(cv2, "imencode", lambda *a, **kw: (False, None))
         img = np.zeros((10, 10, 3), dtype=np.uint8)
-        with pytest.raises(RuntimeError, match="Failed to encode PNG"):
+        with pytest.raises(RuntimeError, match="Failed to encode JPEG"):
             _png_b64(img)
 
 
@@ -164,7 +164,7 @@ class TestFigToB64:
         b64 = _fig_to_b64(fig)
         assert isinstance(b64, str)
         raw = base64.b64decode(b64)
-        assert raw[:8] == b"\x89PNG\r\n\x1a\n"
+        assert raw[:3] == b"\xff\xd8\xff"
 
 
 # ─── _preprocess_torch ──────────────────────────────────────────────────────
@@ -203,7 +203,7 @@ class TestAnnotationsB64:
         )
         b64 = annotations_b64(sample_bgr, result)
         raw = base64.b64decode(b64)
-        assert raw[:8] == b"\x89PNG\r\n\x1a\n"
+        assert raw[:3] == b"\xff\xd8\xff"
 
 
 # ─── explain_result ─────────────────────────────────────────────────────────
