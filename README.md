@@ -1,191 +1,171 @@
-# SafetyVision
+# 🦺 SafetyVision
 
-> Open-source AI workplace safety monitor. Detects PPE violations, explains every decision, and forecasts compliance trends — for free, self-hostable.
+**Open-source AI workplace safety monitor — detects PPE violations, explains every decision, and forecasts compliance trends. Free, self-hostable, $0 to run.**
 
-Hard-hat-free zones, missing high-vis vests, exposed hands — safety violations that human eyes miss when scanning hundreds of cameras. SafetyVision is an open-source pre-screening tool that surfaces these for human review, replacing $500–$2,000/month enterprise tools like Protex AI and Intenseye.
+[Live app](https://safetyvision.vercel.app) · [Open-source demo](https://huggingface.co/spaces/ayushgupta7777/safetyvision) · [API docs](https://ssbjfzly4mljxkb45moiu2bb6a0nnrrb.lambda-url.ap-south-1.on.aws/docs) · [Model card](https://huggingface.co/ayushgupta7777/safetyvision-yolov8) · License: AGPL-3.0
 
-[Model on Hugging Face](https://huggingface.co/ayushgupta7777/safetyvision-yolov8) · [Training run on W&B](https://wandb.ai/agcr7jw-vellore-institute-of-technology/Ultralytics/runs/yolov8s-ppe-v2_20260519_065053) · [Model card](docs/model_card.md) · [Architecture decisions](docs/decisions.md)
+Missing hard hats, no high-vis vest, no fall harness at height — the violations human eyes miss when scanning hundreds of frames. SafetyVision is an open-source pre-screening tool that surfaces them for human review, with explainable detections, OSHA-grounded incident reports, and forward-looking compliance forecasts. It replaces commercial tools that charge $500–$2,000/month.
+
+[![Watch the demo](https://img.youtube.com/vi/-LsOMLM9hkI/hqdefault.jpg)](https://youtu.be/-LsOMLM9hkI)
+
+> ▶️ **[Watch the 3-minute walkthrough](https://youtu.be/-LsOMLM9hkI)**
 
 ---
 
-## Status — Week 1 of 3
+## Try it — four ways
 
-| Component | Status |
-|---|---|
-| YOLOv8n detector (13-class PPE) | ✅ Trained, weights on HF Hub |
-| Model card with honest metrics | ✅ Published |
-| Architecture decisions (ADRs) | ✅ Documented |
-| GradCAM + SHAP explainability | 🚧 Week 2 |
-| OSHA RAG + Gemini multimodal incident reports | 🚧 Week 2 |
-| Prophet 7-day compliance forecast (+ SARIMA baseline) | 🚧 Week 2 |
-| A/B testing harness (paired t-test, McNemar) | 🚧 Week 2 |
-| Hugging Face Spaces demo (Mode 1, free, no signup) | 🚧 Week 3 |
-| AWS Lambda serverless API (Mode 2, Terraform IaC) | 🚧 Week 3 |
+| | What | Link |
+|---|---|---|
+| 🌐 **Web app** | The full product — upload, history, dashboard, forecasts, PDF reports, account + API keys | **[safetyvision.vercel.app](https://safetyvision.vercel.app)** |
+| 🤗 **Open-source demo** | No signup, image *or* short video — try it instantly in the browser | **[HF Spaces](https://huggingface.co/spaces/ayushgupta7777/safetyvision)** |
+| 🔌 **Production API** | Documented REST API with Swagger, Python SDK + CLI on PyPI | **[`/docs`](https://ssbjfzly4mljxkb45moiu2bb6a0nnrrb.lambda-url.ap-south-1.on.aws/docs)** |
+| 🛠️ **Deploy your own** | One command — `cd infra/aws && terraform apply` | [GitHub](https://github.com/ayushgupta07xx/SafetyVision) |
 
-## Headline metrics
-
-Held-out test split (5,148 images, never touched during training):
-
-| | Value |
-|---|---|
-| **mAP@0.5** | **0.701** |
-| **mAP@0.5:0.95** | **0.441** |
-| Precision | 0.607 |
-| Recall | 0.711 |
-| Inference (T4 GPU) | 2.9 ms / image |
-
-Per-class breakdown, failure modes, and bias notes: [model card](docs/model_card.md).
+---
 
 ## What it does
 
-- **Detects 13 PPE classes:** hard hat, safety vest, goggles, gloves, mask, fall harness — and their "missing" violation counterparts, plus Fall-Detected and Person.
-- **Will generate OSHA-grounded incident reports** via Gemini Flash + RAG over OSHA 29 CFR 1926 and 1910 (Week 2).
-- **Will explain every decision** with GradCAM heatmaps over the detection head and SHAP feature scores (Week 2).
-- **Will forecast 7-day site compliance** using Prophet, benchmarked against a statsmodels SARIMA baseline (Week 2).
-- **Will deploy two ways:** a hosted Gradio demo on Hugging Face Spaces (image + short video, free, no signup) and a serverless AWS Lambda API with Terraform-managed infrastructure (image-only, 6 MB cap) (Week 3).
+Upload a worksite photo (or short clip on the demo) and SafetyVision:
 
-## Who it's for
+- **Detects PPE compliance** — finds each worker and checks for hard hats, safety vests, masks, gloves, and fall harnesses, flagging the missing-PPE violations in red, ranked by risk level. Powered by a fine-tuned **YOLOv8s** model exported to ONNX, running on **CPU** (no GPU needed).
+- **Explains every decision** — a **GradCAM** heatmap shows where the model looked, plus **SHAP** per-pixel attribution. Auditable, not a black box.
+- **Writes OSHA-grounded incident reports** — a **multimodal Gemini Flash** model reads the annotated image alongside the actual OSHA regulation (retrieved via **Qdrant + BGE** RAG over 29 CFR 1910 and 1926) and cites the real CFR number.
+- **Exports an audit-ready PDF** — one click per violation, with the annotated image, citation, corrective actions, and an explainability section.
+- **Forecasts 7-day compliance** — a **Prophet** time-series model (benchmarked against a SARIMA baseline) projects the trend per violation type.
+- **Remembers your history** — every inspection is saved per user (Supabase Postgres with row-level security), surfaced in a history table and a roll-up dashboard.
 
-- Small factory owners and safety managers who can't afford enterprise compliance software
-- Construction-site supervisors
-- Warehouse safety compliance officers
-- Researchers working on industrial computer vision
-- Anyone who wants to self-host PPE monitoring
+## Headline metrics
 
-Target geography: India + Southeast Asia.
+YOLOv8s v2, held-out test set (deployed config: ONNX @ 896):
 
-## Try it
+| | Value |
+|---|---|
+| **mAP@50** | **0.763** |
+| **mAP@50:95** | **0.482** |
+| Warm CPU inference (AWS Lambda) | ~500–800 ms / image |
 
-**Use the published detector** (no clone needed, just `pip install ultralytics huggingface_hub`):
+Strongest classes: Fall-Detected (0.956), Hardhat (0.936), Safety Vest (0.891). Weakest: NO-Safety Vest (0.382). The v2 retrain (YOLOv8s + Albumentations augmentation on 80k+ images) targeted **0.78** mAP@50 and landed at **0.763** — an honest near-miss, documented in full. Per-class breakdown, v1→v2 comparison, and failure modes: **[model card](https://huggingface.co/ayushgupta7777/safetyvision-yolov8)**.
 
-```python
-from ultralytics import YOLO
-from huggingface_hub import hf_hub_download
+**Statistical validation (A/B tests):**
+- Incident-report quality, RAG vs no-RAG: RAG wins, Cohen's d = 0.65, p = 0.0197 (paired t-test, N=16)
+- Confidence threshold 0.40 vs 0.55: 0.40 wins, McNemar p = 4×10⁻⁵ (N=200)
 
-weights = hf_hub_download(repo_id="ayushgupta7777/safetyvision-yolov8", filename="best.pt")
-model = YOLO(weights)
-results = model("worksite_image.jpg")
-results[0].show()
+## The three deployment surfaces
+
+- **Mode 3 — Next.js + Vercel (primary):** the product. Next.js 14 + Tailwind + shadcn/ui, Supabase auth (email + Google OAuth), per-user history, forecast dashboard, PDF downloads, API-key management. → [safetyvision.vercel.app](https://safetyvision.vercel.app)
+- **Mode 1 — Hugging Face Spaces (open-source demo):** a free Gradio app, no signup, accepts image **or** short video (≤30s). The community / quick-try surface. → [HF Spaces](https://huggingface.co/spaces/ayushgupta7777/safetyvision)
+- **Mode 2 — AWS Lambda Function URL (production API):** serverless ONNX inference behind a free-forever HTTPS endpoint, API-key auth, Swagger/Redoc docs. **Image-only** (Lambda's 6MB on-wire payload cap ≈ 4MB raw after base64; video stays on Modes 1 & 3). → [`/docs`](https://ssbjfzly4mljxkb45moiu2bb6a0nnrrb.lambda-url.ap-south-1.on.aws/docs)
+
+## API, SDK & CLI
+
+```bash
+pip install safetyvision-client
 ```
 
-ONNX Runtime (CPU-friendly, what AWS Lambda will use in Mode 2):
-
 ```python
-import cv2, numpy as np
-import onnxruntime as ort
-from huggingface_hub import hf_hub_download
+from safetyvision_client import SafetyVision
 
-# Both files must live in the same directory (ONNX external data)
-hf_hub_download(repo_id="ayushgupta7777/safetyvision-yolov8", filename="best.onnx.data")
-onnx_path = hf_hub_download(repo_id="ayushgupta7777/safetyvision-yolov8", filename="best.onnx")
-
-session = ort.InferenceSession(onnx_path)
-img = cv2.imread("worksite_image.jpg")
-img = cv2.resize(img, (640, 640))
-inp = img.transpose(2, 0, 1)[None].astype(np.float32) / 255.0
-outputs = session.run(None, {"images": inp})
-# outputs[0] shape: (1, 17, 8400) — apply NMS for final boxes
+sv = SafetyVision(api_key="sv_...")        # mint a key on the Account page
+result = sv.analyze("worksite.jpg")
+print(result.violations)
+result.save_pdf("incident.pdf")
 ```
 
-**Develop locally** (clone the repo):
+```bash
+# CLI (ships with the SDK)
+safetyvision analyze worksite.jpg --pdf report.pdf
+```
+
+Full API + SDK + CLI reference: [`docs/api_usage.md`](docs/api_usage.md) · interactive Swagger at the Lambda URL's `/docs`.
+
+## Deploy your own
 
 ```bash
 git clone https://github.com/ayushgupta07xx/SafetyVision.git
 cd SafetyVision
-./bootstrap.sh
-source .venv/bin/activate
+
+# Local dev
+./bootstrap.sh && source .venv/bin/activate
+
+# AWS production stack (Lambda + S3 + DynamoDB + ECR, ap-south-1)
+cd infra/aws && terraform apply
 ```
 
-## Architecture (preview)
+Walkthroughs: [`docs/aws_deploy.md`](docs/aws_deploy.md) · [`docs/supabase_setup.md`](docs/supabase_setup.md). Everything runs on always-free tiers — AWS Lambda/S3/DynamoDB/ECR, Supabase, Vercel, Hugging Face, Qdrant Cloud, Google AI Studio.
+
+## Architecture
 
 ```
 Image / short video clip
        │
        ▼
-[YOLOv8n ONNX inference]        ← Week 1 ✅
+[YOLOv8s ONNX inference]  ──►  bounding boxes + risk-ranked violations
        │
        ▼
-[GradCAM + SHAP explainer]      ← Week 2
+[GradCAM + SHAP explainer]
        │
        ▼
-[OSHA RAG → Gemini Flash report] ← Week 2
+[Single-node LangGraph]  ──►  OSHA RAG (Qdrant + BGE) ──► Gemini Flash report ──► PDF ──► log
        │
        ▼
-[Log violation → DynamoDB / SQLite]
+[Persistence]  ──►  Supabase (per-user history)  +  DynamoDB (stateless audit)
        │
        ▼
-[Prophet 7-day compliance forecast] ← Week 2
+[Prophet 7-day forecast]  (SARIMA baseline)
        │
        ▼
-[Gradio response (Mode 1) / Lambda response (Mode 2)] ← Week 3
+[Vercel UI (Mode 3) · Gradio (Mode 1) · Lambda API (Mode 2)]
 ```
 
-Full architecture diagram (Mermaid): [docs/architecture.md](docs/architecture.md) (Week 3).
-
-## Training
-
-- **Hardware:** Kaggle Notebooks, 2× Tesla T4 GPUs (free tier)
-- **Framework:** Ultralytics 8.3.40, PyTorch 2.10.0 + CUDA 12.8
-- **Dataset:** [PPE-Combined v1](https://universe.roboflow.com/mazz-maxx/ppe-combined-9bprl-mmcaf) on Roboflow Universe — 57,904 images, 13 classes
-- **Schedule:** 100 epochs · batch=32 · imgsz=640 · SGD with default ultralytics LR schedule
-- **Wall time:** ~15 hours across two Kaggle Save Versions (12-hour session cap forced a mid-run resume at epoch 82 — see [ADR-003](docs/decisions.md))
-- **W&B run (public):** original v1 run `9nctv2ai` (expired); current run [`yolov8s-ppe-v2`](https://wandb.ai/agcr7jw-vellore-institute-of-technology/Ultralytics/runs/yolov8s-ppe-v2_20260519_065053) — epochs 1–82 in W&B charts; epochs 83–100 metrics in [`model/yolov8n-ppe-v1/results.csv`](model/yolov8n-ppe-v1/results.csv) (see [ADR-004](docs/decisions.md))
-- **MLflow registry:** committed at [`mlruns/`](mlruns/), run ID `f1932e539038417dad6db757affd50e6`
-
-Why Kaggle and not GCP? See [ADR-001](docs/decisions.md) — diagnosed an undocumented GCP N1/G2 family throttle on new paid accounts via systematic VM-class testing across 30+ zones.
+Full Mermaid diagram: [`docs/architecture.md`](docs/architecture.md).
 
 ## Repository layout
 
 ```
 safetyvision/
-├── model/                      # Training artifacts (results.csv, curves, confusion matrix)
-├── mlruns/                     # MLflow run history (committed)
-├── core/                       # YOLOv8 wrapper, GradCAM/SHAP, RAG client (Week 2)
-├── agent/                      # Single-node LangGraph orchestration (Week 2)
-├── analytics/                  # Prophet + SARIMA forecasting (Week 2)
-├── evaluation/                 # A/B test harness, golden set, eval results (Week 2)
+├── model/            # YOLOv8 training artifacts (results, curves, confusion matrix)
+├── mlruns/           # MLflow run history (committed)
+├── core/             # ONNX detector, GradCAM/SHAP explainer, RAG, Supabase + PDF adapters
+├── agent/            # Single-node LangGraph orchestration (retrieve → report → PDF → log)
+├── analytics/        # Prophet + SARIMA forecasting, synthetic seeders
+├── evaluation/       # A/B harness, golden set, committed eval results
 ├── serving/
-│   ├── hf_app/                 # Gradio app for HF Spaces (Week 3)
-│   └── lambda/                 # AWS Lambda container handler (Week 3)
-├── infra/aws/                  # Terraform: Lambda + Function URL + S3 + DynamoDB + ECR (Week 3)
-├── rag_data/                   # OSHA PDF scrape + Qdrant ingest (Week 2)
-└── docs/                       # Model card, ADRs, experiments, deploy guides
+│   ├── hf_app/       # Gradio app (Mode 1, HF Spaces)
+│   └── lambda/       # FastAPI + Mangum handler, Dockerfile (Mode 2)
+├── frontend/         # Next.js 14 + Tailwind + shadcn/ui (Mode 3, Vercel)
+├── sdk/              # safetyvision-client — Python SDK + CLI (PyPI)
+├── infra/
+│   ├── aws/          # Terraform: Lambda + Function URL + S3 + DynamoDB + ECR
+│   └── supabase/     # SQL migrations + RLS policies
+├── rag_data/         # OSHA corpus scrape + Qdrant ingest
+└── docs/             # Model card, ADRs, experiments, deploy + API guides
 ```
-
-## Roadmap
-
-**Week 2 — core pipeline & explainability**
-- OSHA RAG ingestion (Qdrant Cloud + BGE-small embeddings, BGE-reranker-base)
-- GradCAM + SHAP explainability on the detector head
-- Gemini Flash multimodal incident reports with RAG-grounded regulation citations
-- Prophet 7-day compliance forecast + SARIMA baseline (MAPE comparison)
-- Single-node LangGraph orchestration
-- A/B testing harness: prompt variants (paired t-test) and confidence thresholds (McNemar)
-
-**Week 3 — ship**
-- Gradio app deployed on Hugging Face Spaces (image + video ≤30s)
-- AWS Lambda container image, deployed via Terraform to ap-south-1
-- Lambda Function URL endpoint (chose this over API Gateway — [ADR-006](docs/decisions.md) to come)
-- AWS Budgets cost safety nets ($1/$5/$10 alerts)
-- Demo GIF in README, blog post, LinkedIn launch
 
 ## Tech stack
 
-**Computer vision:** YOLOv8n · OpenCV · ONNX · ONNX Runtime  
-**Explainability:** GradCAM · SHAP  
-**Multimodal LLM:** Gemini 1.5 Flash  
-**RAG:** Qdrant Cloud · BAAI/bge-small-en-v1.5 · BAAI/bge-reranker-base  
-**Orchestration:** LangGraph (single-node)  
-**Time series:** Prophet · statsmodels SARIMA (baseline)  
-**Evaluation:** Groq llama-3.3-70b-versatile (LLM judge) · paired t-test · McNemar test  
-**ML infrastructure:** MLflow · Weights & Biases  
-**Serving:** Gradio (Hugging Face Spaces) · AWS Lambda container · Lambda Function URL  
-**Cloud:** AWS S3 · DynamoDB · ECR · CloudWatch · Terraform  
-**Training:** Kaggle Notebooks (2× T4 GPU) · ultralytics 8.3.40 · PyTorch 2.10.0
+**Computer vision:** YOLOv8s · OpenCV · ONNX · ONNX Runtime · Albumentations
+**Explainability:** GradCAM · SHAP
+**Multimodal LLM:** Gemini Flash (multimodal)
+**RAG:** Qdrant Cloud · BAAI/bge-small-en-v1.5 · BAAI/bge-reranker-base
+**Orchestration:** LangGraph (single-node)
+**Time series:** Prophet · statsmodels SARIMA (baseline)
+**Evaluation:** Groq llama-3.3-70b-versatile (LLM judge) · paired t-test · McNemar · Cohen's d
+**Frontend:** Next.js 14 · TypeScript · TailwindCSS · shadcn/ui · Vercel
+**Backend / auth:** Supabase (PostgreSQL · Auth · row-level security · OAuth · Storage)
+**API:** FastAPI + Mangum on Lambda · OpenAPI/Swagger · Python SDK + CLI (PyPI)
+**ML infrastructure:** MLflow · Weights & Biases
+**Cloud:** AWS Lambda · Lambda Function URLs · S3 · DynamoDB · ECR · CloudWatch · Terraform
+**Training:** single cloud L4 GPU (see model card for the full procedure)
+
+## Who it's for
+
+Small factory owners and safety managers priced out of enterprise tools · construction-site supervisors · warehouse compliance officers · developers who want to self-host or integrate PPE detection via API/SDK · industrial-CV researchers. Target geography: India + Southeast Asia.
+
+> **Intended use:** an AI-assisted pre-screening tool to support human safety officers. **Not** a replacement for human judgment. See the model card for failure modes and out-of-scope settings.
 
 ## License
 
-**AGPL-3.0** for both the repository code and the model weights distributed on Hugging Face Hub. Strong copyleft: any derivative work (modifications, integrations, hosted services accessible over a network) must also be released under AGPL-3.0. See [`LICENSE`](LICENSE) for the full license text and the [model card](docs/model_card.md#license) for the inheritance from Ultralytics YOLOv8.
+**AGPL-3.0** for both the repository code and the model weights on Hugging Face Hub (inherited from Ultralytics YOLOv8). Strong copyleft — any derivative work, including a network-accessible hosted service, must also be released under AGPL-3.0. See [`LICENSE`](LICENSE).
 
 ## Citation
 
@@ -200,4 +180,4 @@ safetyvision/
 
 ## Acknowledgements
 
-[Ultralytics](https://github.com/ultralytics/ultralytics) for YOLOv8 and the training framework · [Roboflow Universe](https://universe.roboflow.com) for the PPE-Combined dataset · [OSHA](https://www.osha.gov) for public-domain regulations · [Kaggle Notebooks](https://www.kaggle.com/code) for free 2× T4 GPU training
+[Ultralytics](https://github.com/ultralytics/ultralytics) (YOLOv8) · [Roboflow Universe](https://universe.roboflow.com) (PPE datasets) · [OSHA](https://www.osha.gov) (public-domain regulations) · [Hugging Face](https://huggingface.co), [Vercel](https://vercel.com), [Supabase](https://supabase.com), [Qdrant](https://qdrant.tech) (free-tier hosting).
