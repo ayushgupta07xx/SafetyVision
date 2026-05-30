@@ -10,7 +10,7 @@ Needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in .env (service role bypasses RL
 import os
 import random
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 from supabase import create_client  # noqa: E402
+
 from core.detector import RISK_LEVELS  # noqa: E402  derive types+levels, don't hardcode
 
 DAYS = int(os.environ.get("DAYS", "30"))
@@ -66,7 +67,7 @@ sb.table("violations").delete().eq("user_id", user_id).eq("source", "synthetic")
 sb.table("inspections").delete().eq("user_id", user_id).eq("image_url", SENTINEL).execute()
 print("Cleared prior synthetic rows.")
 
-now = datetime.now(timezone.utc)
+now = datetime.now(UTC)
 inspections, violations = [], []
 
 for d in range(DAYS):
@@ -102,9 +103,9 @@ for d in range(DAYS):
             "total_violations": len(hit),
         })
 
-sb.table("inspections").insert(inspections).execute()
+sb.table("inspections").insert(inspections).execute()  # type: ignore[arg-type]
 if violations:
-    sb.table("violations").insert(violations).execute()
+    sb.table("violations").insert(violations).execute()  # type: ignore[arg-type]
 
 print(f"Inserted {len(inspections)} inspections, {len(violations)} violations over {DAYS} days.")
 print("Profiles:", {vt: PROFILE.get(vt, DEFAULT) for vt in TYPES})
