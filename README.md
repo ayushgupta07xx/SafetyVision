@@ -49,7 +49,7 @@
 ![Runtime](https://img.shields.io/badge/runtime_cost-%240-2EA043)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-A42E2B)
 
-**[🌐 Live app](https://safetyvision.vercel.app)** · **[🤗 Open-source demo](https://huggingface.co/spaces/ayushgupta7777/safetyvision)** · **[🔌 API docs](https://ssbjfzly4mljxkb45moiu2bb6a0nnrrb.lambda-url.ap-south-1.on.aws/docs)** · **[📄 Model card](https://huggingface.co/ayushgupta7777/safetyvision-yolov8)**
+**[🌐 Live app](https://safetyvision.vercel.app)** · **[🤗 Open-source demo](https://huggingface.co/spaces/ayushgupta7777/safetyvision)** · **[🔌 API docs](https://ssbjfzly4mljxkb45moiu2bb6a0nnrrb.lambda-url.ap-south-1.on.aws/docs)** · **[📄 Model card](https://huggingface.co/ayushgupta7777/safetyvision-yolov8)** · **[📝 Blog](https://dev.to/ayushgupta07xx/building-a-free-osha-compliance-tool-8-weeks-solo-325p)**
 
 </div>
 
