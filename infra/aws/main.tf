@@ -178,6 +178,14 @@ resource "aws_lambda_function" "inference" {
 resource "aws_lambda_function_url" "inference_url" {
   function_name      = aws_lambda_function.inference.function_name
   authorization_type = "NONE" # public; ADR-006. API-key auth is Phase 2 (handler-level).
+
+  # CORS folded into IaC (was set via CLI; a clean destroy->apply dropped it). Matches live.
+  cors {
+    allow_origins = ["http://localhost:3001", "https://safetyvision.vercel.app"]
+    allow_methods = ["GET", "POST"]
+    allow_headers = ["content-type", "x-api-key"]
+    max_age       = 86400
+  }
 }
 
 # Public Function URL needs an explicit invoke permission for principal "*".
