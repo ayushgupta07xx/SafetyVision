@@ -61,7 +61,7 @@ Missing hard hats, no high-vis vest, no fall harness at height — the violation
 
 <img src="docs/demo.gif" alt="SafetyVision demo — upload, detection, GradCAM, OSHA report, PDF" width="820">
 
-[![Watch the full 3-min walkthrough demo](https://img.shields.io/badge/%E2%96%B6%20Watch%20the%20full%20~3--min%20walkthrough%20demo-FF0000?logo=youtube&logoColor=white&style=for-the-badge)](https://youtu.be/-LsOMLM9hkI)
+[![Watch the full 3-min walkthrough demo](https://img.shields.io/badge/%E2%96%B6%20Watch%20the%20full%20~3--min%20walkthrough%20demo-FF0000?logo=youtube&logoColor=white&style=for-the-badge)](https://youtu.be/I9FxbBiZ18c)
 
 </div>
 
